@@ -1,0 +1,33 @@
+name: CPI Download to GitHub
+
+on:
+  workflow_dispatch:
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Piper
+        run: |
+          curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
+          chmod +x piper
+
+      - name: Download CPI artifact
+        env:
+          PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
+        run: |
+          ./piper integrationArtifactDownload \
+            --integrationFlowId "test" \
+            --downloadPath "./cpi-artifacts"
+
+      - name: Commit and Push
+        run: |
+          git config user.name "cpi-bot"
+          git config user.email "cpi-bot@github.com"
+          git add .
+          git commit -m "Backup CPI artifact from SAP" || echo "No changes"
+          git push
