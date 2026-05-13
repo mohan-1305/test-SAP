@@ -2,6 +2,11 @@ name: CPI Download to GitHub
 
 on:
   workflow_dispatch:
+    inputs:
+      integrationFlowId:
+        description: "Enter CPI iFlow ID, example: ExternalLoggingPOC"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -24,7 +29,7 @@ jobs:
           PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
         run: |
           ./piper integrationArtifactDownload \
-            --integrationFlowId "ExternalLoggingPOC" \
+            --integrationFlowId "${{ github.event.inputs.integrationFlowId }}" \
             --integrationFlowVersion "active" \
             --downloadPath "./cpi-artifacts"
 
@@ -36,6 +41,6 @@ jobs:
           rm -f piper
 
           git add cpi-artifacts/
-          git commit -m "Backup ExternalLoggingPOC from SAP CPI" || echo "No changes"
+          git commit -m "Backup ${{ github.event.inputs.integrationFlowId }} from SAP CPI" || echo "No changes"
 
           git push
