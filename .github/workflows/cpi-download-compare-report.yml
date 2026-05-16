@@ -1,10 +1,10 @@
-name: CPI Download Compare Report
+name: CPI Compare PDF Report
 
 on:
   workflow_dispatch:
     inputs:
       integrationFlowId:
-        description: "Enter CPI iFlow ID, example: ExternalLoggingPOC"
+        description: "Enter CPI iFlow ID, example: Sampletest"
         required: true
         type: string
 
@@ -12,12 +12,18 @@ permissions:
   contents: write
 
 jobs:
-  compare:
+  compare-report:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip graphviz
+          pip install reportlab matplotlib networkx pydot
 
       - name: Install Piper
         run: |
@@ -26,22 +32,18 @@ jobs:
 
       - name: Prepare folders
         run: |
-          mkdir -p cpi-artifacts
-          mkdir -p latest-download
-          mkdir -p old-unzip
-          mkdir -p new-unzip
-          mkdir -p reports
+          mkdir -p cpi-artifacts latest-download old-unzip new-unzip reports diagrams
 
-      - name: Backup existing artifact
+      - name: Backup existing artifact from repo
         run: |
           IFLOW="${{ github.event.inputs.integrationFlowId }}"
           if [ -f "cpi-artifacts/${IFLOW}.zip" ]; then
             cp "cpi-artifacts/${IFLOW}.zip" "old-${IFLOW}.zip"
           else
-            echo "No existing artifact found. First-time backup."
+            echo "No existing artifact found in repo."
           fi
 
-      - name: Download latest CPI artifact
+      - name: Download latest artifact from SAP CPI
         env:
           PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
         run: |
@@ -50,62 +52,229 @@ jobs:
             --integrationFlowVersion "active" \
             --downloadPath "./latest-download"
 
-      - name: Compare and generate report
+      - name: Generate PDF report with diagram and graph
         run: |
-          IFLOW="${{ github.event.inputs.integrationFlowId }}"
-          REPORT="reports/${IFLOW}-change-report.md"
+          cat > generate_report.py << 'PY'
+          import os, zipfile, difflib, xml.etree.ElementTree as ET
+          from datetime import datetime
+          from reportlab.lib.pagesizes import A4
+          from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle, PageBreak
+          from reportlab.lib.styles import getSampleStyleSheet
+          from reportlab.lib import colors
+          import matplotlib.pyplot as plt
+          import networkx as nx
 
-          echo "# CPI Change Report - ${IFLOW}" > "$REPORT"
-          echo "" >> "$REPORT"
-          echo "**Generated On:** $(date -u)" >> "$REPORT"
-          echo "" >> "$REPORT"
+          iflow = os.environ["IFLOW"]
+          old_zip = f"old-{iflow}.zip"
+          new_zip = f"latest-download/{iflow}.zip"
 
-          if [ ! -f "old-${IFLOW}.zip" ]; then
-            echo "## Status" >> "$REPORT"
-            echo "First-time backup. No previous artifact available for comparison." >> "$REPORT"
-            echo "" >> "$REPORT"
-            cp "latest-download/${IFLOW}.zip" "cpi-artifacts/${IFLOW}.zip"
-            exit 0
-          fi
+          report_pdf = f"reports/{iflow}-comparison-report.pdf"
+          report_md = f"reports/{iflow}-comparison-report.md"
+          diagram_png = f"diagrams/{iflow}-flow-diagram.png"
+          graph_png = f"diagrams/{iflow}-change-graph.png"
 
-          unzip -q "old-${IFLOW}.zip" -d old-unzip
-          unzip -q "latest-download/${IFLOW}.zip" -d new-unzip
+          os.makedirs("old-unzip", exist_ok=True)
+          os.makedirs("new-unzip", exist_ok=True)
+          os.makedirs("reports", exist_ok=True)
+          os.makedirs("diagrams", exist_ok=True)
+          os.makedirs("cpi-artifacts", exist_ok=True)
 
-          echo "## Changed File Summary" >> "$REPORT"
-          echo "" >> "$REPORT"
+          def unzip_file(src, dest):
+              with zipfile.ZipFile(src, "r") as z:
+                  z.extractall(dest)
 
-          DIFF_OUTPUT=$(diff -qr old-unzip new-unzip || true)
+          first_time = not os.path.exists(old_zip)
 
-          if [ -z "$DIFF_OUTPUT" ]; then
-            echo "No changes detected between existing GitHub artifact and latest SAP CPI artifact." >> "$REPORT"
-            echo "" >> "$REPORT"
-          else
-            echo "Changes detected." >> "$REPORT"
-            echo "" >> "$REPORT"
-            echo '```text' >> "$REPORT"
-            echo "$DIFF_OUTPUT" >> "$REPORT"
-            echo '```' >> "$REPORT"
-            echo "" >> "$REPORT"
+          if not first_time:
+              unzip_file(old_zip, "old-unzip")
 
-            echo "## Detailed Diff" >> "$REPORT"
-            echo "" >> "$REPORT"
-            echo '```diff' >> "$REPORT"
-            diff -ru old-unzip new-unzip >> "$REPORT" || true
-            echo '```' >> "$REPORT"
-          fi
+          unzip_file(new_zip, "new-unzip")
 
-          cp "latest-download/${IFLOW}.zip" "cpi-artifacts/${IFLOW}.zip"
+          def list_files(base):
+              result = {}
+              for root, dirs, files in os.walk(base):
+                  for f in files:
+                      path = os.path.join(root, f)
+                      rel = os.path.relpath(path, base)
+                      result[rel] = path
+              return result
 
-      - name: Commit and Push Report
+          old_files = list_files("old-unzip") if not first_time else {}
+          new_files = list_files("new-unzip")
+
+          added = sorted(set(new_files) - set(old_files))
+          deleted = sorted(set(old_files) - set(new_files))
+          common = sorted(set(old_files) & set(new_files))
+
+          modified = []
+          diff_text = []
+
+          for rel in common:
+              try:
+                  with open(old_files[rel], "r", encoding="utf-8", errors="ignore") as f:
+                      old_lines = f.readlines()
+                  with open(new_files[rel], "r", encoding="utf-8", errors="ignore") as f:
+                      new_lines = f.readlines()
+                  if old_lines != new_lines:
+                      modified.append(rel)
+                      diff_text.extend(list(difflib.unified_diff(
+                          old_lines, new_lines,
+                          fromfile=f"old/{rel}",
+                          tofile=f"new/{rel}",
+                          lineterm=""
+                      )))
+              except Exception:
+                  pass
+
+          def find_iflw(base):
+              for root, dirs, files in os.walk(base):
+                  for f in files:
+                      if f.endswith(".iflw"):
+                          return os.path.join(root, f)
+              return None
+
+          iflw_file = find_iflw("new-unzip")
+
+          nodes = []
+          edges = []
+
+          if iflw_file:
+              ns = {
+                  "bpmn2": "http://www.omg.org/spec/BPMN/20100524/MODEL"
+              }
+              tree = ET.parse(iflw_file)
+              root = tree.getroot()
+
+              node_map = {}
+
+              for tag, label in [
+                  ("startEvent", "Start"),
+                  ("endEvent", "End"),
+                  ("callActivity", "Step")
+              ]:
+                  for elem in root.findall(f".//bpmn2:{tag}", ns):
+                      node_id = elem.attrib.get("id", "")
+                      name = elem.attrib.get("name", tag)
+                      node_map[node_id] = name
+                      nodes.append((node_id, name))
+
+              for sf in root.findall(".//bpmn2:sequenceFlow", ns):
+                  src = sf.attrib.get("sourceRef")
+                  tgt = sf.attrib.get("targetRef")
+                  if src and tgt:
+                      edges.append((src, tgt))
+
+          G = nx.DiGraph()
+          for node_id, label in nodes:
+              G.add_node(node_id, label=label)
+          for src, tgt in edges:
+              G.add_edge(src, tgt)
+
+          plt.figure(figsize=(10, 4))
+          if G.nodes:
+              pos = nx.spring_layout(G, seed=7)
+              labels = nx.get_node_attributes(G, "label")
+              nx.draw(G, pos, with_labels=True, labels=labels, node_size=3000, arrows=True, font_size=8)
+              plt.title(f"SAP CPI iFlow Diagram - {iflow}")
+          else:
+              plt.text(0.5, 0.5, "No iFlow diagram found", ha="center", va="center")
+              plt.axis("off")
+          plt.tight_layout()
+          plt.savefig(diagram_png, dpi=150)
+          plt.close()
+
+          categories = ["Added", "Modified", "Deleted"]
+          values = [len(added), len(modified), len(deleted)]
+
+          plt.figure(figsize=(6, 4))
+          plt.bar(categories, values)
+          plt.title(f"Change Summary - {iflow}")
+          plt.ylabel("File Count")
+          plt.tight_layout()
+          plt.savefig(graph_png, dpi=150)
+          plt.close()
+
+          status = "First-time backup" if first_time else ("Changes detected" if added or modified or deleted else "No changes detected")
+
+          with open(report_md, "w", encoding="utf-8") as f:
+              f.write(f"# CPI Comparison Report - {iflow}\n\n")
+              f.write(f"Generated On: {datetime.utcnow()} UTC\n\n")
+              f.write(f"## Status\n{status}\n\n")
+              f.write("## Summary\n")
+              f.write(f"- Added files: {len(added)}\n")
+              f.write(f"- Modified files: {len(modified)}\n")
+              f.write(f"- Deleted files: {len(deleted)}\n\n")
+              f.write("## Added Files\n" + "\n".join([f"- {x}" for x in added]) + "\n\n")
+              f.write("## Modified Files\n" + "\n".join([f"- {x}" for x in modified]) + "\n\n")
+              f.write("## Deleted Files\n" + "\n".join([f"- {x}" for x in deleted]) + "\n\n")
+              f.write("## Detailed Diff\n```diff\n")
+              f.write("\n".join(diff_text[:3000]))
+              f.write("\n```\n")
+
+          styles = getSampleStyleSheet()
+          doc = SimpleDocTemplate(report_pdf, pagesize=A4)
+          story = []
+
+          story.append(Paragraph(f"CPI Comparison Report - {iflow}", styles["Title"]))
+          story.append(Spacer(1, 12))
+          story.append(Paragraph(f"Generated On: {datetime.utcnow()} UTC", styles["Normal"]))
+          story.append(Spacer(1, 12))
+          story.append(Paragraph(f"Status: {status}", styles["Heading2"]))
+          story.append(Spacer(1, 12))
+
+          table_data = [
+              ["Metric", "Count"],
+              ["Added Files", str(len(added))],
+              ["Modified Files", str(len(modified))],
+              ["Deleted Files", str(len(deleted))]
+          ]
+
+          table = Table(table_data)
+          table.setStyle(TableStyle([
+              ("BACKGROUND", (0,0), (-1,0), colors.lightgrey),
+              ("GRID", (0,0), (-1,-1), 0.5, colors.grey),
+              ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold")
+          ]))
+          story.append(table)
+          story.append(Spacer(1, 20))
+
+          story.append(Paragraph("iFlow Diagram", styles["Heading2"]))
+          story.append(Image(diagram_png, width=480, height=190))
+          story.append(Spacer(1, 20))
+
+          story.append(Paragraph("Change Graph", styles["Heading2"]))
+          story.append(Image(graph_png, width=360, height=240))
+          story.append(PageBreak())
+
+          story.append(Paragraph("Added Files", styles["Heading2"]))
+          story.append(Paragraph("<br/>".join(added) if added else "None", styles["Normal"]))
+          story.append(Spacer(1, 12))
+
+          story.append(Paragraph("Modified Files", styles["Heading2"]))
+          story.append(Paragraph("<br/>".join(modified) if modified else "None", styles["Normal"]))
+          story.append(Spacer(1, 12))
+
+          story.append(Paragraph("Deleted Files", styles["Heading2"]))
+          story.append(Paragraph("<br/>".join(deleted) if deleted else "None", styles["Normal"]))
+
+          doc.build(story)
+
+          import shutil
+          shutil.copyfile(new_zip, f"cpi-artifacts/{iflow}.zip")
+          PY
+
+          IFLOW="${{ github.event.inputs.integrationFlowId }}" python generate_report.py
+
+      - name: Commit artifact, PDF report, diagram and graph
         run: |
           IFLOW="${{ github.event.inputs.integrationFlowId }}"
 
           git config user.name "cpi-bot"
           git config user.email "cpi-bot@github.com"
 
-          rm -f piper
+          rm -f piper generate_report.py
           rm -rf latest-download old-unzip new-unzip old-${IFLOW}.zip
 
-          git add cpi-artifacts/ reports/
-          git commit -m "Backup and compare ${IFLOW} from SAP CPI" || echo "No changes"
+          git add cpi-artifacts/ reports/ diagrams/
+          git commit -m "Compare and report ${IFLOW} SAP CPI changes" || echo "No changes"
           git push
