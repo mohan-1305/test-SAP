@@ -1,0 +1,111 @@
+name: CPI Download Compare Report
+
+on:
+  workflow_dispatch:
+    inputs:
+      integrationFlowId:
+        description: "Enter CPI iFlow ID, example: ExternalLoggingPOC"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Piper
+        run: |
+          curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
+          chmod +x piper
+
+      - name: Prepare folders
+        run: |
+          mkdir -p cpi-artifacts
+          mkdir -p latest-download
+          mkdir -p old-unzip
+          mkdir -p new-unzip
+          mkdir -p reports
+
+      - name: Backup existing artifact
+        run: |
+          IFLOW="${{ github.event.inputs.integrationFlowId }}"
+          if [ -f "cpi-artifacts/${IFLOW}.zip" ]; then
+            cp "cpi-artifacts/${IFLOW}.zip" "old-${IFLOW}.zip"
+          else
+            echo "No existing artifact found. First-time backup."
+          fi
+
+      - name: Download latest CPI artifact
+        env:
+          PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
+        run: |
+          ./piper integrationArtifactDownload \
+            --integrationFlowId "${{ github.event.inputs.integrationFlowId }}" \
+            --integrationFlowVersion "active" \
+            --downloadPath "./latest-download"
+
+      - name: Compare and generate report
+        run: |
+          IFLOW="${{ github.event.inputs.integrationFlowId }}"
+          REPORT="reports/${IFLOW}-change-report.md"
+
+          echo "# CPI Change Report - ${IFLOW}" > "$REPORT"
+          echo "" >> "$REPORT"
+          echo "**Generated On:** $(date -u)" >> "$REPORT"
+          echo "" >> "$REPORT"
+
+          if [ ! -f "old-${IFLOW}.zip" ]; then
+            echo "## Status" >> "$REPORT"
+            echo "First-time backup. No previous artifact available for comparison." >> "$REPORT"
+            echo "" >> "$REPORT"
+            cp "latest-download/${IFLOW}.zip" "cpi-artifacts/${IFLOW}.zip"
+            exit 0
+          fi
+
+          unzip -q "old-${IFLOW}.zip" -d old-unzip
+          unzip -q "latest-download/${IFLOW}.zip" -d new-unzip
+
+          echo "## Changed File Summary" >> "$REPORT"
+          echo "" >> "$REPORT"
+
+          DIFF_OUTPUT=$(diff -qr old-unzip new-unzip || true)
+
+          if [ -z "$DIFF_OUTPUT" ]; then
+            echo "No changes detected between existing GitHub artifact and latest SAP CPI artifact." >> "$REPORT"
+            echo "" >> "$REPORT"
+          else
+            echo "Changes detected." >> "$REPORT"
+            echo "" >> "$REPORT"
+            echo '```text' >> "$REPORT"
+            echo "$DIFF_OUTPUT" >> "$REPORT"
+            echo '```' >> "$REPORT"
+            echo "" >> "$REPORT"
+
+            echo "## Detailed Diff" >> "$REPORT"
+            echo "" >> "$REPORT"
+            echo '```diff' >> "$REPORT"
+            diff -ru old-unzip new-unzip >> "$REPORT" || true
+            echo '```' >> "$REPORT"
+          fi
+
+          cp "latest-download/${IFLOW}.zip" "cpi-artifacts/${IFLOW}.zip"
+
+      - name: Commit and Push Report
+        run: |
+          IFLOW="${{ github.event.inputs.integrationFlowId }}"
+
+          git config user.name "cpi-bot"
+          git config user.email "cpi-bot@github.com"
+
+          rm -f piper
+          rm -rf latest-download old-unzip new-unzip old-${IFLOW}.zip
+
+          git add cpi-artifacts/ reports/
+          git commit -m "Backup and compare ${IFLOW} from SAP CPI" || echo "No changes"
+          git push
