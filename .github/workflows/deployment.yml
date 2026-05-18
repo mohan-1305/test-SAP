@@ -3,7 +3,7 @@ name: CPI Package Download to GitHub
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 16 * * *"   # Daily 10 PM IST
+    - cron: "30 16 * * *"
 
 permissions:
   contents: write
@@ -26,37 +26,60 @@ jobs:
           curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
           chmod +x piper
 
-      - name: Read all iFlows from Package and Download
+      - name: Read package iFlows and Download
         env:
           PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
         run: |
+          set -e
+
           echo "$PIPER_apiServiceKey" > service-key.json
 
           CLIENT_ID=$(jq -r '.clientid' service-key.json)
           CLIENT_SECRET=$(jq -r '.clientsecret' service-key.json)
 
           echo "Getting access token..."
-
           ACCESS_TOKEN=$(curl -s -X POST \
             "$CPI_TOKEN_URL?grant_type=client_credentials" \
             -u "$CLIENT_ID:$CLIENT_SECRET" | jq -r '.access_token')
 
-          echo "Fetching all iFlows from package: $PACKAGE_ID"
+          if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
+            echo "Access token failed"
+            exit 1
+          fi
 
-          curl -s -f \
+          echo "Listing all design-time artifacts..."
+          HTTP_CODE=$(curl -s -w "%{http_code}" \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Accept: application/json" \
-            "$CPI_API_URL/api/v1/IntegrationPackages('$PACKAGE_ID')/IntegrationDesigntimeArtifacts" \
-            -o artifacts.json
+            "$CPI_API_URL/api/v1/IntegrationDesigntimeArtifacts" \
+            -o all-artifacts.json)
 
-          cat artifacts.json
+          echo "Artifact API HTTP code: $HTTP_CODE"
+          cat all-artifacts.json
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Unable to list artifacts"
+            exit 1
+          fi
 
           mkdir -p cpi-artifacts
 
-          ARTIFACT_IDS=$(jq -r '.d.results[].Id' artifacts.json)
+          echo "Filtering artifacts for package: $PACKAGE_ID"
+
+          ARTIFACT_IDS=$(jq -r --arg PKG "$PACKAGE_ID" '
+            .d.results[]
+            | select(.PackageId == $PKG or .PackageId == null)
+            | .Id
+          ' all-artifacts.json)
 
           echo "Artifacts found:"
           echo "$ARTIFACT_IDS"
+
+          if [ -z "$ARTIFACT_IDS" ]; then
+            echo "No artifacts found for package $PACKAGE_ID"
+            echo "Check actual package technical ID from package metadata."
+            exit 1
+          fi
 
           for FLOW_ID in $ARTIFACT_IDS
           do
@@ -73,7 +96,7 @@ jobs:
           git config user.name "cpi-bot"
           git config user.email "cpi-bot@github.com"
 
-          rm -f piper service-key.json artifacts.json
+          rm -f piper service-key.json all-artifacts.json
 
           git add cpi-artifacts/
           git commit -m "Backup all iFlows from package: test" || echo "No changes"
