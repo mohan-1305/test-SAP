@@ -61,5 +61,5 @@ jobs:
           rm -f piper
 
           git add cpi-artifacts/
-          git commit -m "Backup all configured CPI iFlows" || echo "No changes"
+          git commit -m "Backup all iFlows from test package" || echo "No changes"
           git push
