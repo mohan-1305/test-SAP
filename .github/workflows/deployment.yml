@@ -25,7 +25,7 @@ jobs:
         env:
           PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
         run: |
-          MANIFEST_FILE="cpi-artifacts/package-iflows.txt"
+          MANIFEST_FILE="cpi-artifacts/iflows.txt"
 
           if [ ! -f "$MANIFEST_FILE" ]; then
             echo "$MANIFEST_FILE not found"
