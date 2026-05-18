@@ -1,4 +1,4 @@
-name: MULTI PACKAGE - CPI Download to GitHub
+name: MULTI PACKAGE - CPI Download + Lint Report
 
 on:
   workflow_dispatch:
@@ -30,6 +30,12 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip
+          pip install pandas matplotlib jinja2
+
       - name: Install SAP Piper
         run: |
           curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
@@ -47,6 +53,9 @@ jobs:
             echo "$MANIFEST_FILE not found"
             exit 1
           fi
+
+          mkdir -p cpi-artifacts reports
+          rm -f downloaded-list.txt
 
           while IFS= read -r LINE || [ -n "$LINE" ]
           do
@@ -69,8 +78,6 @@ jobs:
               exit 1
             fi
 
-            # If Jira sends packageName, download only that package.
-            # If packageName is empty, download all packages from manifest.
             if [ -n "$JIRA_PACKAGE_NAME" ] && [ "$PACKAGE_NAME" != "$JIRA_PACKAGE_NAME" ]; then
               echo "Skipping package $PACKAGE_NAME because Jira requested $JIRA_PACKAGE_NAME"
               continue
@@ -94,17 +101,259 @@ jobs:
               mv "$ZIP_FILE" "$TARGET_FILE"
             fi
 
+            echo "${PACKAGE_NAME}|${FLOW_ID}" >> downloaded-list.txt
+
           done < "$MANIFEST_FILE"
 
-      - name: Commit and Push to Repo
+      - name: Run CPI Lint and Generate Single HTML Report
+        env:
+          JIRA_KEY: ${{ github.event.inputs.jiraKey }}
+        run: |
+          cat > cpi_lint.py << 'PY'
+          import os, re, zipfile, base64
+          from io import BytesIO
+          from datetime import datetime
+          import pandas as pd
+          import matplotlib.pyplot as plt
+          from jinja2 import Template
+
+          os.makedirs("reports", exist_ok=True)
+          os.makedirs("lint-unzip", exist_ok=True)
+
+          results = []
+
+          def add(package, iflow, check, severity, status, message, file="-"):
+              results.append({
+                  "Package": package,
+                  "iFlow": iflow,
+                  "Check": check,
+                  "Severity": severity,
+                  "Status": status,
+                  "Message": message,
+                  "File": file
+              })
+
+          def unzip_file(src, dest):
+              with zipfile.ZipFile(src, "r") as z:
+                  z.extractall(dest)
+
+          def scan_files(path):
+              output = []
+              for root, dirs, files in os.walk(path):
+                  for f in files:
+                      output.append(os.path.join(root, f))
+              return output
+
+          secret_patterns = [
+              r"password\s*=",
+              r"clientsecret",
+              r"apikey",
+              r"api_key",
+              r"token\s*=",
+              r"Bearer\s+[A-Za-z0-9_\-\.]+",
+              r"Basic\s+[A-Za-z0-9_\-\.=]+"
+          ]
+
+          if not os.path.exists("downloaded-list.txt"):
+              add("-", "-", "Download Check", "HIGH", "FAIL", "No artifacts were downloaded")
+          else:
+              with open("downloaded-list.txt", "r", encoding="utf-8") as f:
+                  lines = [x.strip() for x in f.readlines() if x.strip()]
+
+              for line in lines:
+                  package, iflow = line.split("|", 1)
+                  zip_path = f"cpi-artifacts/{package}/{package}_{iflow}.zip"
+                  unzip_path = f"lint-unzip/{package}/{iflow}"
+
+                  if not os.path.exists(zip_path):
+                      add(package, iflow, "Artifact ZIP Check", "HIGH", "FAIL", "Downloaded ZIP file not found", zip_path)
+                      continue
+
+                  os.makedirs(unzip_path, exist_ok=True)
+                  unzip_file(zip_path, unzip_path)
+
+                  all_files = scan_files(unzip_path)
+                  iflw_files = [x for x in all_files if x.endswith(".iflw")]
+                  groovy_files = [x for x in all_files if x.endswith(".groovy")]
+
+                  add(package, iflow, "iFlow XML Exists", "HIGH",
+                      "PASS" if iflw_files else "FAIL",
+                      "iFlow XML found" if iflw_files else "iFlow XML missing")
+
+                  valid_name = re.match(r"^[A-Za-z0-9_\-]+$", iflow) is not None
+                  add(package, iflow, "Naming Convention", "MEDIUM",
+                      "PASS" if valid_name else "FAIL",
+                      "Valid technical ID" if valid_name else "Technical ID contains spaces/special characters")
+
+                  secret_found = False
+                  for file in all_files:
+                      try:
+                          content = open(file, "r", encoding="utf-8", errors="ignore").read()
+                          for pattern in secret_patterns:
+                              if re.search(pattern, content, re.IGNORECASE):
+                                  secret_found = True
+                                  add(package, iflow, "Hardcoded Secret Scan", "CRITICAL", "FAIL", f"Possible secret pattern found: {pattern}", file)
+                      except Exception:
+                          pass
+
+                  if not secret_found:
+                      add(package, iflow, "Hardcoded Secret Scan", "CRITICAL", "PASS", "No hardcoded secret pattern found")
+
+                  if groovy_files:
+                      for gf in groovy_files:
+                          content = open(gf, "r", encoding="utf-8", errors="ignore").read()
+
+                          has_try_catch = "try" in content and "catch" in content
+                          add(package, iflow, "Groovy Exception Handling", "MEDIUM",
+                              "PASS" if has_try_catch else "WARN",
+                              "try/catch found" if has_try_catch else "try/catch not detected", gf)
+
+                          if "println" in content:
+                              add(package, iflow, "Groovy Logging Standard", "LOW", "WARN", "Avoid println in production Groovy scripts", gf)
+                  else:
+                      add(package, iflow, "Groovy Script Check", "LOW", "PASS", "No Groovy script found")
+
+                  default_found = False
+                  bad_names = [
+                      "Content Modifier 1",
+                      "Content Modifier 2",
+                      "Request Reply 1",
+                      "Router 1",
+                      "Groovy Script 1"
+                  ]
+
+                  for file in iflw_files:
+                      content = open(file, "r", encoding="utf-8", errors="ignore").read()
+                      for name in bad_names:
+                          if name in content:
+                              default_found = True
+                              add(package, iflow, "Default Step Naming", "MEDIUM", "FAIL", f"Default generated step name found: {name}", file)
+
+                  if not default_found:
+                      add(package, iflow, "Default Step Naming", "MEDIUM", "PASS", "No default generated step names found")
+
+                  exception_found = False
+                  for file in iflw_files:
+                      content = open(file, "r", encoding="utf-8", errors="ignore").read()
+                      if "Exception Subprocess" in content or "subProcess" in content:
+                          exception_found = True
+
+                  add(package, iflow, "Exception Handling Design", "MEDIUM",
+                      "PASS" if exception_found else "WARN",
+                      "Exception subprocess found" if exception_found else "No exception subprocess detected")
+
+          df = pd.DataFrame(results)
+
+          def chart_base64(series, title):
+              plt.figure(figsize=(5, 3))
+              plt.bar(series.index.astype(str), series.values)
+              plt.title(title)
+              plt.tight_layout()
+              buffer = BytesIO()
+              plt.savefig(buffer, format="png", dpi=140)
+              plt.close()
+              buffer.seek(0)
+              return base64.b64encode(buffer.read()).decode("utf-8")
+
+          status_chart = chart_base64(df.groupby("Status").size(), "Lint Status Summary")
+          severity_chart = chart_base64(df.groupby("Severity").size(), "Severity Summary")
+          package_chart = chart_base64(df.groupby("Package").size(), "Package-wise Checks")
+
+          total = len(df)
+          passed = len(df[df["Status"] == "PASS"])
+          failed = len(df[df["Status"] == "FAIL"])
+          warnings = len(df[df["Status"] == "WARN"])
+
+          html = Template("""
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>CPI Lint Validation Report</title>
+            <style>
+              body { font-family: Arial, sans-serif; background:#f5f7fb; margin:30px; color:#17202a; }
+              h1 { color:#063970; }
+              .cards { display:flex; gap:15px; margin:20px 0; }
+              .card { background:white; padding:18px; border-radius:10px; width:180px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+              .num { font-size:30px; font-weight:bold; }
+              .pass { color:#10893e; }
+              .fail { color:#d93025; }
+              .warn { color:#f29900; }
+              .charts { display:flex; flex-wrap:wrap; gap:20px; margin:20px 0; }
+              .chart { background:white; padding:15px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+              table { width:100%; border-collapse:collapse; background:white; margin-top:20px; }
+              th, td { border:1px solid #ddd; padding:8px; font-size:12px; }
+              th { background:#e8eef7; }
+              tr:nth-child(even) { background:#fafafa; }
+            </style>
+          </head>
+          <body>
+            <h1>SAP BTP Integration Suite - CPI Lint Validation Report</h1>
+            <p><b>Generated On:</b> {{ generated_on }} UTC</p>
+            <p><b>Jira Key:</b> {{ jira_key }}</p>
+
+            <div class="cards">
+              <div class="card"><div>Total Checks</div><div class="num">{{ total }}</div></div>
+              <div class="card"><div>Passed</div><div class="num pass">{{ passed }}</div></div>
+              <div class="card"><div>Failed</div><div class="num fail">{{ failed }}</div></div>
+              <div class="card"><div>Warnings</div><div class="num warn">{{ warnings }}</div></div>
+            </div>
+
+            <div class="charts">
+              <div class="chart"><h3>Status Summary</h3><img src="data:image/png;base64,{{ status_chart }}" width="420"></div>
+              <div class="chart"><h3>Severity Summary</h3><img src="data:image/png;base64,{{ severity_chart }}" width="420"></div>
+              <div class="chart"><h3>Package-wise Checks</h3><img src="data:image/png;base64,{{ package_chart }}" width="420"></div>
+            </div>
+
+            <h2>Detailed Validation Results</h2>
+            {{ table }}
+          </body>
+          </html>
+          """).render(
+              generated_on=datetime.utcnow(),
+              jira_key=os.environ.get("JIRA_KEY", "-"),
+              total=total,
+              passed=passed,
+              failed=failed,
+              warnings=warnings,
+              status_chart=status_chart,
+              severity_chart=severity_chart,
+              package_chart=package_chart,
+              table=df.to_html(index=False, escape=False)
+          )
+
+          with open("reports/cpi-lint-report.html", "w", encoding="utf-8") as f:
+              f.write(html)
+
+          critical = df[(df["Status"] == "FAIL") & (df["Severity"].isin(["CRITICAL", "HIGH"]))]
+          if not critical.empty:
+              with open("lint_failed.flag", "w") as f:
+                  f.write("true")
+          PY
+
+          JIRA_KEY="${{ github.event.inputs.jiraKey }}" python cpi_lint.py
+
+      - name: Commit and Push Artifacts and Lint Report
+        if: always()
         run: |
           git config user.name "cpi-bot"
           git config user.email "cpi-bot@github.com"
 
-          rm -f piper
+          rm -f piper cpi_lint.py downloaded-list.txt
+          rm -rf lint-unzip
 
-          git add cpi-artifacts/
+          git add cpi-artifacts/ reports/cpi-lint-report.html
 
-          git commit -m "Backup CPI iFlows from Jira ${{ github.event.inputs.jiraKey }}" || echo "No changes"
+          git commit -m "Backup CPI iFlows and generate CPI lint report for Jira ${{ github.event.inputs.jiraKey }}" || echo "No changes"
 
           git push
+
+      - name: Stop if CPI Lint Failed
+        if: always()
+        run: |
+          if [ -f "lint_failed.flag" ]; then
+            echo "CPI lint failed. Please check reports/cpi-lint-report.html"
+            exit 1
+          fi
+
+          echo "CPI lint passed successfully"
