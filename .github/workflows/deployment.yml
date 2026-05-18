@@ -14,6 +14,8 @@ jobs:
 
     env:
       PACKAGE_ID: test
+      CPI_API_URL: https://391c9555trial.it-cpitrial05.cfapps.us10-001.hana.ondemand.com
+      CPI_TOKEN_URL: https://391c9555trial.authentication.us10.hana.ondemand.com/oauth/token
 
     steps:
       - name: Checkout repo
@@ -24,22 +26,22 @@ jobs:
           curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
           chmod +x piper
 
-      - name: Read all iFlows from Package
+      - name: Read all iFlows from Package and Download
         env:
           PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
-          CPI_API_URL: ${{ vars.CPI_API_URL }}
-          CPI_TOKEN_URL: ${{ vars.CPI_TOKEN_URL }}
         run: |
           echo "$PIPER_apiServiceKey" > service-key.json
 
-          CLIENT_ID=$(jq -r '.clientid // .uaa.clientid // .oauth.clientid' service-key.json)
-          CLIENT_SECRET=$(jq -r '.clientsecret // .uaa.clientsecret // .oauth.clientsecret' service-key.json)
+          CLIENT_ID=$(jq -r '.clientid' service-key.json)
+          CLIENT_SECRET=$(jq -r '.clientsecret' service-key.json)
+
+          echo "Getting access token..."
 
           ACCESS_TOKEN=$(curl -s -X POST \
             "$CPI_TOKEN_URL?grant_type=client_credentials" \
             -u "$CLIENT_ID:$CLIENT_SECRET" | jq -r '.access_token')
 
-          echo "Fetching artifacts from package: $PACKAGE_ID"
+          echo "Fetching all iFlows from package: $PACKAGE_ID"
 
           curl -s -f \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
@@ -58,7 +60,7 @@ jobs:
 
           for FLOW_ID in $ARTIFACT_IDS
           do
-            echo "Downloading: $FLOW_ID"
+            echo "Downloading iFlow: $FLOW_ID"
 
             ./piper integrationArtifactDownload \
               --integrationFlowId "$FLOW_ID" \
