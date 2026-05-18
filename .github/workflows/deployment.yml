@@ -1,12 +1,15 @@
-name: CPI Package Download to GitHub
+name: TEST - CPI Package Download to GitHub
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 16 * * *" # Daily 10:00 PM IST
+    - cron: "30 16 * * *"
 
 permissions:
   contents: write
+
+env:
+  PACKAGE_NAME: test
 
 jobs:
   download-package:
@@ -21,29 +24,27 @@ jobs:
           curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
           chmod +x piper
 
-      - name: Download all iFlows from Package
+      - name: Download all iFlows
         env:
           PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
         run: |
-          mkdir -p cpi-artifacts
+          mkdir -p cpi-artifacts/${PACKAGE_NAME}
 
           if [ ! -f "cpi-artifacts/iflows.txt" ]; then
             echo "cpi-artifacts/iflows.txt not found"
             exit 1
           fi
 
-          echo "Reading iFlows from cpi-artifacts/iflows.txt"
+          echo "Reading iFlows..."
 
           while IFS= read -r FLOW_ID || [ -n "$FLOW_ID" ]
           do
             FLOW_ID=$(echo "$FLOW_ID" | xargs)
 
-            # Skip blank lines
             if [ -z "$FLOW_ID" ]; then
               continue
             fi
 
-            # Skip comments
             if [[ "$FLOW_ID" == \#* ]]; then
               continue
             fi
@@ -53,7 +54,13 @@ jobs:
             ./piper integrationArtifactDownload \
               --integrationFlowId "$FLOW_ID" \
               --integrationFlowVersion "active" \
-              --downloadPath "./cpi-artifacts"
+              --downloadPath "./cpi-artifacts/${PACKAGE_NAME}"
+
+            ZIP_FILE="./cpi-artifacts/${PACKAGE_NAME}/${FLOW_ID}.zip"
+
+            if [ -f "$ZIP_FILE" ]; then
+              mv "$ZIP_FILE" "./cpi-artifacts/${PACKAGE_NAME}/${PACKAGE_NAME}_${FLOW_ID}.zip"
+            fi
 
           done < cpi-artifacts/iflows.txt
 
@@ -66,6 +73,6 @@ jobs:
 
           git add cpi-artifacts/
 
-          git commit -m "Backup all CPI iFlows from package test" || echo "No changes detected"
+          git commit -m "Backup all CPI iFlows from package ${PACKAGE_NAME}" || echo "No changes"
 
           git push
