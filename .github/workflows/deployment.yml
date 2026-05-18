@@ -1,4 +1,4 @@
-name: MULTI PACKAGE - CPI Download + Lint Report
+name: MULTI PACKAGE - CPI Download + PDF Lint Report
 
 on:
   workflow_dispatch:
@@ -18,7 +18,7 @@ permissions:
   contents: write
 
 jobs:
-  download-packages:
+  download-lint-report:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,7 +34,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y unzip
-          pip install pandas matplotlib jinja2
+          pip install pandas matplotlib reportlab
 
       - name: Install SAP Piper
         run: |
@@ -61,29 +61,18 @@ jobs:
           do
             LINE=$(echo "$LINE" | xargs)
 
-            if [ -z "$LINE" ]; then
-              continue
-            fi
-
-            if [[ "$LINE" == \#* ]]; then
+            if [ -z "$LINE" ] || [[ "$LINE" == \#* ]]; then
               continue
             fi
 
             PACKAGE_NAME=$(echo "$LINE" | cut -d'|' -f1 | xargs)
             FLOW_ID=$(echo "$LINE" | cut -d'|' -f2- | xargs)
 
-            if [ -z "$PACKAGE_NAME" ] || [ -z "$FLOW_ID" ]; then
-              echo "Invalid line: $LINE"
-              echo "Expected format: packageName|iFlowId"
-              exit 1
-            fi
-
             if [ -n "$JIRA_PACKAGE_NAME" ] && [ "$PACKAGE_NAME" != "$JIRA_PACKAGE_NAME" ]; then
               echo "Skipping package $PACKAGE_NAME because Jira requested $JIRA_PACKAGE_NAME"
               continue
             fi
 
-            echo "Jira Key: $JIRA_KEY"
             echo "Package: $PACKAGE_NAME"
             echo "Downloading iFlow: $FLOW_ID"
 
@@ -105,31 +94,36 @@ jobs:
 
           done < "$MANIFEST_FILE"
 
-      - name: Run CPI Lint and Generate Single HTML Report
+      - name: Run CPI Lint and Generate PDF Report
         env:
           JIRA_KEY: ${{ github.event.inputs.jiraKey }}
         run: |
-          cat > cpi_lint.py << 'PY'
-          import os, re, zipfile, base64
-          from io import BytesIO
+          cat > cpi_lint_pdf.py << 'PY'
+          import os, re, zipfile
           from datetime import datetime
           import pandas as pd
           import matplotlib.pyplot as plt
-          from jinja2 import Template
+
+          from reportlab.lib.pagesizes import A4, landscape
+          from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
+          from reportlab.lib.styles import getSampleStyleSheet
+          from reportlab.lib import colors
 
           os.makedirs("reports", exist_ok=True)
           os.makedirs("lint-unzip", exist_ok=True)
+          os.makedirs("reports/charts", exist_ok=True)
 
           results = []
 
-          def add(package, iflow, check, severity, status, message, file="-"):
+          def add(package, iflow, check, severity, status, observation, recommendation, file="-"):
               results.append({
                   "Package": package,
                   "iFlow": iflow,
                   "Check": check,
                   "Severity": severity,
                   "Status": status,
-                  "Message": message,
+                  "Observation": observation,
+                  "Recommendation": recommendation,
                   "File": file
               })
 
@@ -140,22 +134,28 @@ jobs:
           def scan_files(path):
               output = []
               for root, dirs, files in os.walk(path):
-                  for f in files:
-                      output.append(os.path.join(root, f))
+                  for file in files:
+                      output.append(os.path.join(root, file))
               return output
 
+          def read_text(file):
+              try:
+                  return open(file, "r", encoding="utf-8", errors="ignore").read()
+              except Exception:
+                  return ""
+
           secret_patterns = [
-              r"password\s*=",
-              r"clientsecret",
-              r"apikey",
-              r"api_key",
-              r"token\s*=",
-              r"Bearer\s+[A-Za-z0-9_\-\.]+",
-              r"Basic\s+[A-Za-z0-9_\-\.=]+"
+              (r"password\s*=", "Possible hardcoded password found", "Move password to CPI Security Material or externalized parameter"),
+              (r"clientsecret", "Possible client secret found", "Move client secret to secure credential store"),
+              (r"apikey", "Possible API key found", "Move API key to secure parameter/security material"),
+              (r"api_key", "Possible API key found", "Move API key to secure parameter/security material"),
+              (r"token\s*=", "Possible token found", "Move token to secure credential store"),
+              (r"Bearer\s+[A-Za-z0-9_\-\.]+", "Bearer token pattern found", "Do not hardcode bearer token"),
+              (r"Basic\s+[A-Za-z0-9_\-\.=]+", "Basic authorization pattern found", "Do not hardcode authorization value")
           ]
 
           if not os.path.exists("downloaded-list.txt"):
-              add("-", "-", "Download Check", "HIGH", "FAIL", "No artifacts were downloaded")
+              add("-", "-", "Download Validation", "HIGH", "FAIL", "No CPI artifact was downloaded", "Check manifest file and SAP service key")
           else:
               with open("downloaded-list.txt", "r", encoding="utf-8") as f:
                   lines = [x.strip() for x in f.readlines() if x.strip()]
@@ -166,7 +166,7 @@ jobs:
                   unzip_path = f"lint-unzip/{package}/{iflow}"
 
                   if not os.path.exists(zip_path):
-                      add(package, iflow, "Artifact ZIP Check", "HIGH", "FAIL", "Downloaded ZIP file not found", zip_path)
+                      add(package, iflow, "Artifact ZIP Validation", "HIGH", "FAIL", "Artifact ZIP not found", "Verify iFlow technical ID in cpi-artifacts/iflows.txt", zip_path)
                       continue
 
                   os.makedirs(unzip_path, exist_ok=True)
@@ -178,173 +178,266 @@ jobs:
 
                   add(package, iflow, "iFlow XML Exists", "HIGH",
                       "PASS" if iflw_files else "FAIL",
-                      "iFlow XML found" if iflw_files else "iFlow XML missing")
+                      "iFlow XML found" if iflw_files else "iFlow XML missing",
+                      "No action required" if iflw_files else "Re-export artifact or check artifact structure")
 
                   valid_name = re.match(r"^[A-Za-z0-9_\-]+$", iflow) is not None
                   add(package, iflow, "Naming Convention", "MEDIUM",
                       "PASS" if valid_name else "FAIL",
-                      "Valid technical ID" if valid_name else "Technical ID contains spaces/special characters")
+                      "Valid technical ID" if valid_name else "Technical ID contains spaces/special characters",
+                      "No action required" if valid_name else "Use only letters, numbers, underscore, or hyphen")
 
                   secret_found = False
                   for file in all_files:
-                      try:
-                          content = open(file, "r", encoding="utf-8", errors="ignore").read()
-                          for pattern in secret_patterns:
-                              if re.search(pattern, content, re.IGNORECASE):
-                                  secret_found = True
-                                  add(package, iflow, "Hardcoded Secret Scan", "CRITICAL", "FAIL", f"Possible secret pattern found: {pattern}", file)
-                      except Exception:
-                          pass
+                      content = read_text(file)
+                      for pattern, observation, recommendation in secret_patterns:
+                          if re.search(pattern, content, re.IGNORECASE):
+                              secret_found = True
+                              add(package, iflow, "Hardcoded Secret Scan", "CRITICAL", "FAIL", observation, recommendation, file)
 
                   if not secret_found:
-                      add(package, iflow, "Hardcoded Secret Scan", "CRITICAL", "PASS", "No hardcoded secret pattern found")
+                      add(package, iflow, "Hardcoded Secret Scan", "CRITICAL", "PASS", "No hardcoded secret pattern found", "No action required")
 
                   if groovy_files:
                       for gf in groovy_files:
-                          content = open(gf, "r", encoding="utf-8", errors="ignore").read()
-
+                          content = read_text(gf)
                           has_try_catch = "try" in content and "catch" in content
+
                           add(package, iflow, "Groovy Exception Handling", "MEDIUM",
                               "PASS" if has_try_catch else "WARN",
-                              "try/catch found" if has_try_catch else "try/catch not detected", gf)
+                              "try/catch block found" if has_try_catch else "try/catch block not detected",
+                              "No action required" if has_try_catch else "Add exception handling in Groovy script",
+                              gf)
 
-                          if "println" in content:
-                              add(package, iflow, "Groovy Logging Standard", "LOW", "WARN", "Avoid println in production Groovy scripts", gf)
+                          add(package, iflow, "Groovy Logging Standard", "LOW",
+                              "WARN" if "println" in content else "PASS",
+                              "println statement found" if "println" in content else "No println statement found",
+                              "Use proper logging/message log instead of println" if "println" in content else "No action required",
+                              gf)
                   else:
-                      add(package, iflow, "Groovy Script Check", "LOW", "PASS", "No Groovy script found")
+                      add(package, iflow, "Groovy Script Check", "LOW", "PASS", "No Groovy script found", "No action required")
 
                   default_found = False
                   bad_names = [
                       "Content Modifier 1",
                       "Content Modifier 2",
+                      "Content Modifier 3",
                       "Request Reply 1",
+                      "Request Reply 2",
                       "Router 1",
-                      "Groovy Script 1"
+                      "Router 2",
+                      "Groovy Script 1",
+                      "Groovy Script 2",
+                      "Message Mapping 1"
                   ]
 
                   for file in iflw_files:
-                      content = open(file, "r", encoding="utf-8", errors="ignore").read()
+                      content = read_text(file)
                       for name in bad_names:
                           if name in content:
                               default_found = True
-                              add(package, iflow, "Default Step Naming", "MEDIUM", "FAIL", f"Default generated step name found: {name}", file)
+                              add(package, iflow, "Default Step Naming", "MEDIUM", "FAIL",
+                                  f"Default generated step name found: {name}",
+                                  "Rename step with meaningful business/technical name",
+                                  file)
 
                   if not default_found:
-                      add(package, iflow, "Default Step Naming", "MEDIUM", "PASS", "No default generated step names found")
+                      add(package, iflow, "Default Step Naming", "MEDIUM", "PASS", "No default generated step names found", "No action required")
 
                   exception_found = False
                   for file in iflw_files:
-                      content = open(file, "r", encoding="utf-8", errors="ignore").read()
+                      content = read_text(file)
                       if "Exception Subprocess" in content or "subProcess" in content:
                           exception_found = True
 
                   add(package, iflow, "Exception Handling Design", "MEDIUM",
                       "PASS" if exception_found else "WARN",
-                      "Exception subprocess found" if exception_found else "No exception subprocess detected")
+                      "Exception subprocess found" if exception_found else "No exception subprocess detected",
+                      "No action required" if exception_found else "Add exception subprocess if required by project standard")
+
+                  content_modifier_count = 0
+                  for file in iflw_files:
+                      content = read_text(file)
+                      content_modifier_count += content.count("Content Modifier")
+
+                  add(package, iflow, "Content Modifier Count", "LOW",
+                      "WARN" if content_modifier_count > 5 else "PASS",
+                      f"{content_modifier_count} content modifiers found",
+                      "Review if some content modifiers can be simplified or combined" if content_modifier_count > 5 else "No action required")
 
           df = pd.DataFrame(results)
 
-          def chart_base64(series, title):
-              plt.figure(figsize=(5, 3))
-              plt.bar(series.index.astype(str), series.values)
+          if df.empty:
+              df = pd.DataFrame([{
+                  "Package": "-",
+                  "iFlow": "-",
+                  "Check": "No Data",
+                  "Severity": "HIGH",
+                  "Status": "FAIL",
+                  "Observation": "No lint result generated",
+                  "Recommendation": "Check workflow logs",
+                  "File": "-"
+              }])
+
+          def make_chart(series, title, filename, chart_type="bar"):
+              plt.figure(figsize=(7, 4))
+              if chart_type == "pie":
+                  plt.pie(series.values, labels=series.index.astype(str), autopct="%1.0f%%")
+              else:
+                  plt.bar(series.index.astype(str), series.values)
+                  plt.xticks(rotation=20, ha="right")
               plt.title(title)
               plt.tight_layout()
-              buffer = BytesIO()
-              plt.savefig(buffer, format="png", dpi=140)
+              path = f"reports/charts/{filename}"
+              plt.savefig(path, dpi=150)
               plt.close()
-              buffer.seek(0)
-              return base64.b64encode(buffer.read()).decode("utf-8")
+              return path
 
-          status_chart = chart_base64(df.groupby("Status").size(), "Lint Status Summary")
-          severity_chart = chart_base64(df.groupby("Severity").size(), "Severity Summary")
-          package_chart = chart_base64(df.groupby("Package").size(), "Package-wise Checks")
+          status_counts = df.groupby("Status").size()
+          severity_counts = df.groupby("Severity").size()
+          package_issues = df[df["Status"].isin(["FAIL", "WARN"])].groupby("Package").size()
+          iflow_issues = df[df["Status"].isin(["FAIL", "WARN"])].groupby("iFlow").size()
 
+          if package_issues.empty:
+              package_issues = pd.Series({"No Issues": 0})
+          if iflow_issues.empty:
+              iflow_issues = pd.Series({"No Issues": 0})
+
+          status_chart = make_chart(status_counts, "Pass / Fail / Warning Summary", "status.png", "pie")
+          severity_chart = make_chart(severity_counts, "Severity-wise Validation Summary", "severity.png", "bar")
+          package_chart = make_chart(package_issues, "Package-wise Issues", "package.png", "bar")
+          iflow_chart = make_chart(iflow_issues, "iFlow-wise Issues", "iflow.png", "bar")
+
+          total_packages = df["Package"].nunique()
+          total_iflows = df["iFlow"].nunique()
           total = len(df)
           passed = len(df[df["Status"] == "PASS"])
           failed = len(df[df["Status"] == "FAIL"])
           warnings = len(df[df["Status"] == "WARN"])
 
-          html = Template("""
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="UTF-8">
-            <title>CPI Lint Validation Report</title>
-            <style>
-              body { font-family: Arial, sans-serif; background:#f5f7fb; margin:30px; color:#17202a; }
-              h1 { color:#063970; }
-              .cards { display:flex; gap:15px; margin:20px 0; }
-              .card { background:white; padding:18px; border-radius:10px; width:180px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
-              .num { font-size:30px; font-weight:bold; }
-              .pass { color:#10893e; }
-              .fail { color:#d93025; }
-              .warn { color:#f29900; }
-              .charts { display:flex; flex-wrap:wrap; gap:20px; margin:20px 0; }
-              .chart { background:white; padding:15px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
-              table { width:100%; border-collapse:collapse; background:white; margin-top:20px; }
-              th, td { border:1px solid #ddd; padding:8px; font-size:12px; }
-              th { background:#e8eef7; }
-              tr:nth-child(even) { background:#fafafa; }
-            </style>
-          </head>
-          <body>
-            <h1>SAP BTP Integration Suite - CPI Lint Validation Report</h1>
-            <p><b>Generated On:</b> {{ generated_on }} UTC</p>
-            <p><b>Jira Key:</b> {{ jira_key }}</p>
+          critical_high_failures = df[(df["Status"] == "FAIL") & (df["Severity"].isin(["CRITICAL", "HIGH"]))]
+          deployment_status = "READY FOR DEPLOYMENT" if critical_high_failures.empty else "DEPLOYMENT BLOCKED"
 
-            <div class="cards">
-              <div class="card"><div>Total Checks</div><div class="num">{{ total }}</div></div>
-              <div class="card"><div>Passed</div><div class="num pass">{{ passed }}</div></div>
-              <div class="card"><div>Failed</div><div class="num fail">{{ failed }}</div></div>
-              <div class="card"><div>Warnings</div><div class="num warn">{{ warnings }}</div></div>
-            </div>
+          package_summary = df.groupby("Package").agg(
+              Total_Checks=("Check", "count"),
+              Passed=("Status", lambda x: (x == "PASS").sum()),
+              Failed=("Status", lambda x: (x == "FAIL").sum()),
+              Warnings=("Status", lambda x: (x == "WARN").sum())
+          ).reset_index()
+          package_summary["Status"] = package_summary.apply(lambda r: "BLOCKED" if r["Failed"] > 0 else ("WARNING" if r["Warnings"] > 0 else "PASS"), axis=1)
 
-            <div class="charts">
-              <div class="chart"><h3>Status Summary</h3><img src="data:image/png;base64,{{ status_chart }}" width="420"></div>
-              <div class="chart"><h3>Severity Summary</h3><img src="data:image/png;base64,{{ severity_chart }}" width="420"></div>
-              <div class="chart"><h3>Package-wise Checks</h3><img src="data:image/png;base64,{{ package_chart }}" width="420"></div>
-            </div>
+          iflow_summary = df.groupby(["Package", "iFlow"]).agg(
+              Total_Checks=("Check", "count"),
+              Passed=("Status", lambda x: (x == "PASS").sum()),
+              Failed=("Status", lambda x: (x == "FAIL").sum()),
+              Warnings=("Status", lambda x: (x == "WARN").sum())
+          ).reset_index()
+          iflow_summary["Status"] = iflow_summary.apply(lambda r: "BLOCKED" if r["Failed"] > 0 else ("WARNING" if r["Warnings"] > 0 else "PASS"), axis=1)
 
-            <h2>Detailed Validation Results</h2>
-            {{ table }}
-          </body>
-          </html>
-          """).render(
-              generated_on=datetime.utcnow(),
-              jira_key=os.environ.get("JIRA_KEY", "-"),
-              total=total,
-              passed=passed,
-              failed=failed,
-              warnings=warnings,
-              status_chart=status_chart,
-              severity_chart=severity_chart,
-              package_chart=package_chart,
-              table=df.to_html(index=False, escape=False)
-          )
+          report_pdf = "reports/cpi-lint-report.pdf"
 
-          with open("reports/cpi-lint-report.html", "w", encoding="utf-8") as f:
-              f.write(html)
+          doc = SimpleDocTemplate(report_pdf, pagesize=landscape(A4), rightMargin=20, leftMargin=20, topMargin=20, bottomMargin=20)
+          styles = getSampleStyleSheet()
+          story = []
 
-          critical = df[(df["Status"] == "FAIL") & (df["Severity"].isin(["CRITICAL", "HIGH"]))]
-          if not critical.empty:
+          story.append(Paragraph("SAP BTP Integration Suite - CPI Lint Validation Report", styles["Title"]))
+          story.append(Spacer(1, 12))
+          story.append(Paragraph(f"Generated On: {datetime.utcnow()} UTC", styles["Normal"]))
+          story.append(Paragraph(f"Jira Key: {os.environ.get('JIRA_KEY', '-')}", styles["Normal"]))
+          story.append(Spacer(1, 12))
+          story.append(Paragraph(f"Final Deployment Decision: {deployment_status}", styles["Heading2"]))
+          story.append(Spacer(1, 16))
+
+          exec_table = [
+              ["Metric", "Count"],
+              ["Total Packages", total_packages],
+              ["Total iFlows", total_iflows],
+              ["Total Checks", total],
+              ["Passed", passed],
+              ["Failed", failed],
+              ["Warnings", warnings],
+          ]
+
+          t = Table(exec_table, colWidths=[220, 100])
+          t.setStyle(TableStyle([
+              ("BACKGROUND", (0,0), (-1,0), colors.lightgrey),
+              ("GRID", (0,0), (-1,-1), 0.5, colors.grey),
+              ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+              ("ALIGN", (1,1), (-1,-1), "CENTER"),
+          ]))
+          story.append(Paragraph("Executive Summary", styles["Heading2"]))
+          story.append(t)
+          story.append(PageBreak())
+
+          story.append(Paragraph("Graphical Analysis", styles["Heading2"]))
+          chart_table = Table([
+              [Image(status_chart, width=350, height=200), Image(severity_chart, width=350, height=200)],
+              [Image(package_chart, width=350, height=200), Image(iflow_chart, width=350, height=200)],
+          ])
+          story.append(chart_table)
+          story.append(PageBreak())
+
+          def table_from_df(title, dataframe, max_rows=None):
+              story.append(Paragraph(title, styles["Heading2"]))
+              data = [list(dataframe.columns)] + dataframe.astype(str).values.tolist()
+              if max_rows:
+                  data = data[:max_rows + 1]
+              table = Table(data, repeatRows=1)
+              table.setStyle(TableStyle([
+                  ("BACKGROUND", (0,0), (-1,0), colors.lightgrey),
+                  ("GRID", (0,0), (-1,-1), 0.4, colors.grey),
+                  ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+                  ("FONTSIZE", (0,0), (-1,-1), 7),
+                  ("VALIGN", (0,0), (-1,-1), "TOP"),
+              ]))
+              story.append(table)
+              story.append(PageBreak())
+
+          table_from_df("Package Summary", package_summary)
+          table_from_df("iFlow Summary", iflow_summary)
+
+          detailed_cols = ["Package", "iFlow", "Check", "Severity", "Status", "Observation", "Recommendation"]
+          table_from_df("Detailed Validation Results", df[detailed_cols], max_rows=120)
+
+          story.append(Paragraph("Final Deployment Decision", styles["Heading2"]))
+          if critical_high_failures.empty:
+              story.append(Paragraph("READY FOR DEPLOYMENT - No critical or high severity failures found.", styles["Normal"]))
+          else:
+              story.append(Paragraph("DEPLOYMENT BLOCKED - Critical or high severity failures found.", styles["Normal"]))
+              story.append(Spacer(1, 12))
+              blocked_cols = ["Package", "iFlow", "Check", "Severity", "Status", "Observation", "Recommendation"]
+              data = [blocked_cols] + critical_high_failures[blocked_cols].astype(str).values.tolist()
+              block_table = Table(data, repeatRows=1)
+              block_table.setStyle(TableStyle([
+                  ("BACKGROUND", (0,0), (-1,0), colors.lightgrey),
+                  ("GRID", (0,0), (-1,-1), 0.4, colors.grey),
+                  ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+                  ("FONTSIZE", (0,0), (-1,-1), 7),
+                  ("VALIGN", (0,0), (-1,-1), "TOP"),
+              ]))
+              story.append(block_table)
+
+          doc.build(story)
+
+          if not critical_high_failures.empty:
               with open("lint_failed.flag", "w") as f:
                   f.write("true")
           PY
 
-          JIRA_KEY="${{ github.event.inputs.jiraKey }}" python cpi_lint.py
+          JIRA_KEY="${{ github.event.inputs.jiraKey }}" python cpi_lint_pdf.py
 
-      - name: Commit and Push Artifacts and Lint Report
+      - name: Commit and Push Artifacts and PDF Lint Report
         if: always()
         run: |
           git config user.name "cpi-bot"
           git config user.email "cpi-bot@github.com"
 
-          rm -f piper cpi_lint.py downloaded-list.txt
-          rm -rf lint-unzip
+          rm -f piper cpi_lint_pdf.py downloaded-list.txt
+          rm -rf lint-unzip reports/charts
 
-          git add cpi-artifacts/ reports/cpi-lint-report.html
+          git add cpi-artifacts/ reports/cpi-lint-report.pdf
 
-          git commit -m "Backup CPI iFlows and generate CPI lint report for Jira ${{ github.event.inputs.jiraKey }}" || echo "No changes"
+          git commit -m "Backup CPI iFlows and generate PDF lint report for Jira ${{ github.event.inputs.jiraKey }}" || echo "No changes"
 
           git push
 
@@ -352,7 +445,7 @@ jobs:
         if: always()
         run: |
           if [ -f "lint_failed.flag" ]; then
-            echo "CPI lint failed. Please check reports/cpi-lint-report.html"
+            echo "CPI lint failed. Please check reports/cpi-lint-report.pdf"
             exit 1
           fi
 
