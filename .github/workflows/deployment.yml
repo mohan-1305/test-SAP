@@ -30,27 +30,30 @@ jobs:
         run: |
           echo "$PIPER_apiServiceKey" > service-key.json
 
-          TOKEN_URL=$(jq -r '.uaa.url' service-key.json)
-          CLIENT_ID=$(jq -r '.uaa.clientid' service-key.json)
-          CLIENT_SECRET=$(jq -r '.uaa.clientsecret' service-key.json)
-          CPI_URL=$(jq -r '.uri' service-key.json)
+          TOKEN_URL=$(jq -r '.tokenurl // .uaa.url // .oauth.url' service-key.json)
+          CLIENT_ID=$(jq -r '.clientid // .uaa.clientid // .oauth.clientid' service-key.json)
+          CLIENT_SECRET=$(jq -r '.clientsecret // .uaa.clientsecret // .oauth.clientsecret' service-key.json)
+          CPI_URL=$(jq -r '.url // .uri // .endpoints.integration' service-key.json)
+
+          echo "TOKEN_URL found: $TOKEN_URL"
+          echo "CPI_URL found: $CPI_URL"
 
           ACCESS_TOKEN=$(curl -s -X POST \
-            "$TOKEN_URL/oauth/token?grant_type=client_credentials" \
+            "$TOKEN_URL?grant_type=client_credentials" \
             -u "$CLIENT_ID:$CLIENT_SECRET" | jq -r '.access_token')
 
           echo "Fetching artifacts from package: $PACKAGE_ID"
 
-          curl -s \
+          curl -s -f \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             "$CPI_URL/api/v1/IntegrationPackages('$PACKAGE_ID')/IntegrationDesigntimeArtifacts" \
-            > artifacts.json
+            -o artifacts.json
 
           cat artifacts.json
 
           mkdir -p cpi-artifacts
 
-          ARTIFACT_IDS=$(jq -r '.d.results[].Id' artifacts.json)
+          ARTIFACT_IDS=$(jq -r '.d.results[].Id // .value[].Id' artifacts.json)
 
           echo "Artifacts found:"
           echo "$ARTIFACT_IDS"
@@ -64,18 +67,3 @@ jobs:
               --integrationFlowVersion "active" \
               --downloadPath "./cpi-artifacts"
           done
-
-      - name: Commit and Push to Repo
-        run: |
-          git config user.name "cpi-bot"
-          git config user.email "cpi-bot@github.com"
-
-          rm -f piper
-          rm -f service-key.json
-          rm -f artifacts.json
-
-          git add cpi-artifacts/
-
-          git commit -m "Backup all iFlows from package: test" || echo "No changes"
-
-          git push
