@@ -26,6 +26,7 @@ jobs:
         run: |
           echo "Triggered by Jira Key: ${{ github.event.inputs.jiraKey }}"
           echo "Package from Jira: ${{ github.event.inputs.packageName }}"
+          echo "Note: Workflow will scan all packages from cpi-artifacts/iflows.txt"
 
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -68,11 +69,13 @@ jobs:
             PACKAGE_NAME=$(echo "$LINE" | cut -d'|' -f1 | xargs)
             FLOW_ID=$(echo "$LINE" | cut -d'|' -f2- | xargs)
 
-            if [ -n "$JIRA_PACKAGE_NAME" ] && [ "$PACKAGE_NAME" != "$JIRA_PACKAGE_NAME" ]; then
-              echo "Skipping package $PACKAGE_NAME because Jira requested $JIRA_PACKAGE_NAME"
-              continue
+            if [ -z "$PACKAGE_NAME" ] || [ -z "$FLOW_ID" ]; then
+              echo "Invalid line: $LINE"
+              echo "Expected format: packageName|iFlowId"
+              exit 1
             fi
 
+            echo "Jira Key: $JIRA_KEY"
             echo "Package: $PACKAGE_NAME"
             echo "Downloading iFlow: $FLOW_ID"
 
