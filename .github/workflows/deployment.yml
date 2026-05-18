@@ -3,7 +3,7 @@ name: CPI Package Download to GitHub
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 16 * * *"   # Daily 10 PM IST
+    - cron: "30 16 * * *" # Daily 10:00 PM IST
 
 permissions:
   contents: write
@@ -13,33 +13,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Install Piper
+      - name: Install SAP Piper
         run: |
           curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
           chmod +x piper
 
-      - name: Download all iFlows listed in iflows.txt
+      - name: Download all iFlows from Package
         env:
           PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
         run: |
           mkdir -p cpi-artifacts
 
-          if [ ! -f "iflows.txt" ]; then
-            echo "iflows.txt not found"
+          if [ ! -f "cpi-artifacts/iflows.txt" ]; then
+            echo "cpi-artifacts/iflows.txt not found"
             exit 1
           fi
+
+          echo "Reading iFlows from cpi-artifacts/iflows.txt"
 
           while IFS= read -r FLOW_ID || [ -n "$FLOW_ID" ]
           do
             FLOW_ID=$(echo "$FLOW_ID" | xargs)
 
+            # Skip blank lines
             if [ -z "$FLOW_ID" ]; then
               continue
             fi
 
+            # Skip comments
             if [[ "$FLOW_ID" == \#* ]]; then
               continue
             fi
@@ -51,7 +55,7 @@ jobs:
               --integrationFlowVersion "active" \
               --downloadPath "./cpi-artifacts"
 
-          done < iflows.txt
+          done < cpi-artifacts/iflows.txt
 
       - name: Commit and Push to Repo
         run: |
@@ -61,5 +65,7 @@ jobs:
           rm -f piper
 
           git add cpi-artifacts/
-          git commit -m "Backup all iFlows from test package" || echo "No changes"
+
+          git commit -m "Backup all CPI iFlows from package test" || echo "No changes detected"
+
           git push
