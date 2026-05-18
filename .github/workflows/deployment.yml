@@ -2,6 +2,15 @@ name: MULTI PACKAGE - CPI Download to GitHub
 
 on:
   workflow_dispatch:
+    inputs:
+      jiraKey:
+        description: "Jira Ticket Key"
+        required: false
+        type: string
+      packageName:
+        description: "Package Name from Jira"
+        required: false
+        type: string
   schedule:
     - cron: "30 16 * * *" # Daily 10 PM IST
 
@@ -13,6 +22,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Print Trigger Info
+        run: |
+          echo "Triggered by Jira Key: ${{ github.event.inputs.jiraKey }}"
+          echo "Package from Jira: ${{ github.event.inputs.packageName }}"
+
       - name: Checkout Repo
         uses: actions/checkout@v4
 
@@ -24,6 +38,8 @@ jobs:
       - name: Download all iFlows from all packages
         env:
           PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
+          JIRA_KEY: ${{ github.event.inputs.jiraKey }}
+          JIRA_PACKAGE_NAME: ${{ github.event.inputs.packageName }}
         run: |
           MANIFEST_FILE="cpi-artifacts/iflows.txt"
 
@@ -53,6 +69,14 @@ jobs:
               exit 1
             fi
 
+            # If Jira sends packageName, download only that package.
+            # If packageName is empty, download all packages from manifest.
+            if [ -n "$JIRA_PACKAGE_NAME" ] && [ "$PACKAGE_NAME" != "$JIRA_PACKAGE_NAME" ]; then
+              echo "Skipping package $PACKAGE_NAME because Jira requested $JIRA_PACKAGE_NAME"
+              continue
+            fi
+
+            echo "Jira Key: $JIRA_KEY"
             echo "Package: $PACKAGE_NAME"
             echo "Downloading iFlow: $FLOW_ID"
 
@@ -81,6 +105,6 @@ jobs:
 
           git add cpi-artifacts/
 
-          git commit -m "Backup all CPI iFlows from multiple packages" || echo "No changes"
+          git commit -m "Backup CPI iFlows from Jira ${{ github.event.inputs.jiraKey }}" || echo "No changes"
 
           git push
