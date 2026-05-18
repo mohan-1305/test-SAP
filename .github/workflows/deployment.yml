@@ -1,18 +1,15 @@
-name: TEST - CPI Package Download to GitHub
+name: MULTI PACKAGE - CPI Download to GitHub
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 16 * * *"
+    - cron: "30 16 * * *" # Daily 10 PM IST
 
 permissions:
   contents: write
 
-env:
-  PACKAGE_NAME: test
-
 jobs:
-  download-package:
+  download-packages:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,32 +21,42 @@ jobs:
           curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
           chmod +x piper
 
-      - name: Download all iFlows
+      - name: Download all iFlows from all packages
         env:
           PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
         run: |
-          mkdir -p cpi-artifacts/${PACKAGE_NAME}
+          MANIFEST_FILE="cpi-artifacts/package-iflows.txt"
 
-          if [ ! -f "cpi-artifacts/iflows.txt" ]; then
-            echo "cpi-artifacts/iflows.txt not found"
+          if [ ! -f "$MANIFEST_FILE" ]; then
+            echo "$MANIFEST_FILE not found"
             exit 1
           fi
 
-          echo "Reading iFlows..."
-
-          while IFS= read -r FLOW_ID || [ -n "$FLOW_ID" ]
+          while IFS= read -r LINE || [ -n "$LINE" ]
           do
-            FLOW_ID=$(echo "$FLOW_ID" | xargs)
+            LINE=$(echo "$LINE" | xargs)
 
-            if [ -z "$FLOW_ID" ]; then
+            if [ -z "$LINE" ]; then
               continue
             fi
 
-            if [[ "$FLOW_ID" == \#* ]]; then
+            if [[ "$LINE" == \#* ]]; then
               continue
             fi
 
+            PACKAGE_NAME=$(echo "$LINE" | cut -d'|' -f1 | xargs)
+            FLOW_ID=$(echo "$LINE" | cut -d'|' -f2- | xargs)
+
+            if [ -z "$PACKAGE_NAME" ] || [ -z "$FLOW_ID" ]; then
+              echo "Invalid line: $LINE"
+              echo "Expected format: packageName|iFlowId"
+              exit 1
+            fi
+
+            echo "Package: $PACKAGE_NAME"
             echo "Downloading iFlow: $FLOW_ID"
+
+            mkdir -p "cpi-artifacts/${PACKAGE_NAME}"
 
             ./piper integrationArtifactDownload \
               --integrationFlowId "$FLOW_ID" \
@@ -57,12 +64,13 @@ jobs:
               --downloadPath "./cpi-artifacts/${PACKAGE_NAME}"
 
             ZIP_FILE="./cpi-artifacts/${PACKAGE_NAME}/${FLOW_ID}.zip"
+            TARGET_FILE="./cpi-artifacts/${PACKAGE_NAME}/${PACKAGE_NAME}_${FLOW_ID}.zip"
 
             if [ -f "$ZIP_FILE" ]; then
-              mv "$ZIP_FILE" "./cpi-artifacts/${PACKAGE_NAME}/${PACKAGE_NAME}_${FLOW_ID}.zip"
+              mv "$ZIP_FILE" "$TARGET_FILE"
             fi
 
-          done < cpi-artifacts/iflows.txt
+          done < "$MANIFEST_FILE"
 
       - name: Commit and Push to Repo
         run: |
@@ -73,6 +81,6 @@ jobs:
 
           git add cpi-artifacts/
 
-          git commit -m "Backup all CPI iFlows from package ${PACKAGE_NAME}" || echo "No changes"
+          git commit -m "Backup all CPI iFlows from multiple packages" || echo "No changes"
 
           git push
