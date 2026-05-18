@@ -1,5 +1,6 @@
-ExternalLoggingPOC
-Internallogic
-Sampletest
-Centerlogic
+test_ExternalLoggingPOC
+test_Internallogic
+test_Sampletest
+test_Centerlogic
+test-123_test-123
 
