@@ -3,7 +3,7 @@ name: CPI Package Download to GitHub
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 16 * * *"
+    - cron: "30 16 * * *"   # Daily 10 PM IST
 
 permissions:
   contents: write
@@ -11,11 +11,6 @@ permissions:
 jobs:
   download-package:
     runs-on: ubuntu-latest
-
-    env:
-      PACKAGE_ID: test
-      CPI_API_URL: https://391c9555trial.it-cpitrial05.cfapps.us10-001.hana.ondemand.com
-      CPI_TOKEN_URL: https://391c9555trial.authentication.us10.hana.ondemand.com/oauth/token
 
     steps:
       - name: Checkout repo
@@ -26,94 +21,45 @@ jobs:
           curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
           chmod +x piper
 
-      - name: Read package iFlows and Download
+      - name: Download all iFlows listed in iflows.txt
         env:
           PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
         run: |
-          set -e
-
-          echo "$PIPER_apiServiceKey" > service-key.json
-
-          CLIENT_ID=$(jq -r '.clientid // .uaa.clientid // .oauth.clientid // .credentials.clientid' service-key.json)
-          CLIENT_SECRET=$(jq -r '.clientsecret // .uaa.clientsecret // .oauth.clientsecret // .credentials.clientsecret' service-key.json)
-
-          if [ "$CLIENT_ID" = "null" ] || [ -z "$CLIENT_ID" ]; then
-            echo "CLIENT_ID not found in service key"
-            exit 1
-          fi
-
-          if [ "$CLIENT_SECRET" = "null" ] || [ -z "$CLIENT_SECRET" ]; then
-            echo "CLIENT_SECRET not found in service key"
-            exit 1
-          fi
-
-          echo "Getting access token..."
-
-          TOKEN_RESPONSE=$(curl -s -X POST \
-            "$CPI_TOKEN_URL?grant_type=client_credentials" \
-            -u "$CLIENT_ID:$CLIENT_SECRET")
-
-          ACCESS_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token')
-
-          if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
-            echo "Access token failed"
-            echo "$TOKEN_RESPONSE"
-            exit 1
-          fi
-
-          echo "Listing all design-time artifacts..."
-
-          HTTP_CODE=$(curl -s -w "%{http_code}" \
-            -H "Authorization: Bearer $ACCESS_TOKEN" \
-            -H "Accept: application/json" \
-            "$CPI_API_URL/api/v1/IntegrationDesigntimeArtifacts" \
-            -o all-artifacts.json)
-
-          echo "Artifact API HTTP code: $HTTP_CODE"
-
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "Unable to list artifacts"
-            cat all-artifacts.json
-            exit 1
-          fi
-
           mkdir -p cpi-artifacts
 
-          echo "Filtering artifacts for package: $PACKAGE_ID"
-
-          ARTIFACT_IDS=$(jq -r --arg PKG "$PACKAGE_ID" '
-            .d.results[]
-            | select(.PackageId == $PKG)
-            | .Id
-          ' all-artifacts.json)
-
-          echo "Artifacts found:"
-          echo "$ARTIFACT_IDS"
-
-          if [ -z "$ARTIFACT_IDS" ]; then
-            echo "No artifacts found for package $PACKAGE_ID"
-            echo "Printing artifact list for debugging:"
-            jq -r '.d.results[] | "Id=\(.Id), Name=\(.Name), PackageId=\(.PackageId)"' all-artifacts.json
+          if [ ! -f "iflows.txt" ]; then
+            echo "iflows.txt not found"
             exit 1
           fi
 
-          for FLOW_ID in $ARTIFACT_IDS
+          while IFS= read -r FLOW_ID || [ -n "$FLOW_ID" ]
           do
+            FLOW_ID=$(echo "$FLOW_ID" | xargs)
+
+            if [ -z "$FLOW_ID" ]; then
+              continue
+            fi
+
+            if [[ "$FLOW_ID" == \#* ]]; then
+              continue
+            fi
+
             echo "Downloading iFlow: $FLOW_ID"
 
             ./piper integrationArtifactDownload \
               --integrationFlowId "$FLOW_ID" \
               --integrationFlowVersion "active" \
               --downloadPath "./cpi-artifacts"
-          done
+
+          done < iflows.txt
 
       - name: Commit and Push to Repo
         run: |
           git config user.name "cpi-bot"
           git config user.email "cpi-bot@github.com"
 
-          rm -f piper service-key.json all-artifacts.json
+          rm -f piper
 
           git add cpi-artifacts/
-          git commit -m "Backup all iFlows from package: test" || echo "No changes"
+          git commit -m "Backup all configured CPI iFlows" || echo "No changes"
           git push
