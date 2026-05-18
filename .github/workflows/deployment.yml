@@ -34,20 +34,35 @@ jobs:
 
           echo "$PIPER_apiServiceKey" > service-key.json
 
-          CLIENT_ID=$(jq -r '.clientid' service-key.json)
-          CLIENT_SECRET=$(jq -r '.clientsecret' service-key.json)
+          CLIENT_ID=$(jq -r '.clientid // .uaa.clientid // .oauth.clientid // .credentials.clientid' service-key.json)
+          CLIENT_SECRET=$(jq -r '.clientsecret // .uaa.clientsecret // .oauth.clientsecret // .credentials.clientsecret' service-key.json)
+
+          if [ "$CLIENT_ID" = "null" ] || [ -z "$CLIENT_ID" ]; then
+            echo "CLIENT_ID not found in service key"
+            exit 1
+          fi
+
+          if [ "$CLIENT_SECRET" = "null" ] || [ -z "$CLIENT_SECRET" ]; then
+            echo "CLIENT_SECRET not found in service key"
+            exit 1
+          fi
 
           echo "Getting access token..."
-          ACCESS_TOKEN=$(curl -s -X POST \
+
+          TOKEN_RESPONSE=$(curl -s -X POST \
             "$CPI_TOKEN_URL?grant_type=client_credentials" \
-            -u "$CLIENT_ID:$CLIENT_SECRET" | jq -r '.access_token')
+            -u "$CLIENT_ID:$CLIENT_SECRET")
+
+          ACCESS_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.access_token')
 
           if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
             echo "Access token failed"
+            echo "$TOKEN_RESPONSE"
             exit 1
           fi
 
           echo "Listing all design-time artifacts..."
+
           HTTP_CODE=$(curl -s -w "%{http_code}" \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Accept: application/json" \
@@ -55,10 +70,10 @@ jobs:
             -o all-artifacts.json)
 
           echo "Artifact API HTTP code: $HTTP_CODE"
-          cat all-artifacts.json
 
           if [ "$HTTP_CODE" != "200" ]; then
             echo "Unable to list artifacts"
+            cat all-artifacts.json
             exit 1
           fi
 
@@ -68,7 +83,7 @@ jobs:
 
           ARTIFACT_IDS=$(jq -r --arg PKG "$PACKAGE_ID" '
             .d.results[]
-            | select(.PackageId == $PKG or .PackageId == null)
+            | select(.PackageId == $PKG)
             | .Id
           ' all-artifacts.json)
 
@@ -77,7 +92,8 @@ jobs:
 
           if [ -z "$ARTIFACT_IDS" ]; then
             echo "No artifacts found for package $PACKAGE_ID"
-            echo "Check actual package technical ID from package metadata."
+            echo "Printing artifact list for debugging:"
+            jq -r '.d.results[] | "Id=\(.Id), Name=\(.Name), PackageId=\(.PackageId)"' all-artifacts.json
             exit 1
           fi
 
