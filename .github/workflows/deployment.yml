@@ -3,7 +3,7 @@ name: CPI Package Download to GitHub
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 16 * * *"   # Daily 10 PM IST
+    - cron: "30 16 * * *"   # Daily 10 PM IST
 
 permissions:
   contents: write
@@ -27,33 +27,31 @@ jobs:
       - name: Read all iFlows from Package
         env:
           PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
+          CPI_API_URL: ${{ vars.CPI_API_URL }}
+          CPI_TOKEN_URL: ${{ vars.CPI_TOKEN_URL }}
         run: |
           echo "$PIPER_apiServiceKey" > service-key.json
 
-          TOKEN_URL=$(jq -r '.tokenurl // .uaa.url // .oauth.url' service-key.json)
           CLIENT_ID=$(jq -r '.clientid // .uaa.clientid // .oauth.clientid' service-key.json)
           CLIENT_SECRET=$(jq -r '.clientsecret // .uaa.clientsecret // .oauth.clientsecret' service-key.json)
-          CPI_URL=$(jq -r '.url // .uri // .endpoints.integration' service-key.json)
-
-          echo "TOKEN_URL found: $TOKEN_URL"
-          echo "CPI_URL found: $CPI_URL"
 
           ACCESS_TOKEN=$(curl -s -X POST \
-            "$TOKEN_URL?grant_type=client_credentials" \
+            "$CPI_TOKEN_URL?grant_type=client_credentials" \
             -u "$CLIENT_ID:$CLIENT_SECRET" | jq -r '.access_token')
 
           echo "Fetching artifacts from package: $PACKAGE_ID"
 
           curl -s -f \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
-            "$CPI_URL/api/v1/IntegrationPackages('$PACKAGE_ID')/IntegrationDesigntimeArtifacts" \
+            -H "Accept: application/json" \
+            "$CPI_API_URL/api/v1/IntegrationPackages('$PACKAGE_ID')/IntegrationDesigntimeArtifacts" \
             -o artifacts.json
 
           cat artifacts.json
 
           mkdir -p cpi-artifacts
 
-          ARTIFACT_IDS=$(jq -r '.d.results[].Id // .value[].Id' artifacts.json)
+          ARTIFACT_IDS=$(jq -r '.d.results[].Id' artifacts.json)
 
           echo "Artifacts found:"
           echo "$ARTIFACT_IDS"
@@ -67,3 +65,14 @@ jobs:
               --integrationFlowVersion "active" \
               --downloadPath "./cpi-artifacts"
           done
+
+      - name: Commit and Push to Repo
+        run: |
+          git config user.name "cpi-bot"
+          git config user.email "cpi-bot@github.com"
+
+          rm -f piper service-key.json artifacts.json
+
+          git add cpi-artifacts/
+          git commit -m "Backup all iFlows from package: test" || echo "No changes"
+          git push
