@@ -2,8 +2,11 @@ name: Pull All CPI Packages and iFlows
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "30 16 * * *" # Daily 10 PM IST
+    inputs:
+      jiraKey:
+        description: "Jira Ticket Key"
+        required: false
+        type: string
 
 permissions:
   contents: write
