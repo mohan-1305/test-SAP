@@ -4,12 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       packageName:
-        description: "Package Name"
+        description: "Enter Package Name, example: test or test-123"
         required: true
-        type: choice
-        options:
-          - test
-          - test-123
+        type: string
 
       iflowNames:
         description: "Enter multiple iFlows separated by comma"
@@ -47,13 +44,13 @@ jobs:
         run: |
           TARGET="${{ github.event.inputs.deploymentDate }} ${{ github.event.inputs.deploymentTime }}"
 
-          TARGET_EPOCH=$(date -d "$TARGET" +%s)
-          CURRENT_EPOCH=$(date +%s)
+          TARGET_EPOCH=$(TZ="Asia/Kolkata" date -d "$TARGET" +%s)
+          CURRENT_EPOCH=$(TZ="Asia/Kolkata" date +%s)
 
           WAIT_SECONDS=$((TARGET_EPOCH - CURRENT_EPOCH))
 
-          echo "Current Time: $(date)"
-          echo "Deployment Time: $TARGET"
+          echo "Current IST Time: $(TZ="Asia/Kolkata" date)"
+          echo "Deployment IST Time: $TARGET"
 
           if [ "$WAIT_SECONDS" -gt 0 ]; then
             echo "Waiting $WAIT_SECONDS seconds..."
@@ -67,13 +64,20 @@ jobs:
         env:
           PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
         run: |
+          PACKAGE="${{ github.event.inputs.packageName }}"
+          echo "Selected Package: $PACKAGE"
+
           IFS=',' read -ra FLOWS <<< "${{ github.event.inputs.iflowNames }}"
 
           for FLOW in "${FLOWS[@]}"
           do
             FLOW=$(echo "$FLOW" | xargs)
 
-            echo "Deploying iFlow: $FLOW"
+            if [ -z "$FLOW" ]; then
+              continue
+            fi
+
+            echo "Deploying iFlow: $FLOW from package: $PACKAGE"
 
             ./piper integrationArtifactDeploy \
               --integrationFlowId "$FLOW"
@@ -82,4 +86,4 @@ jobs:
 
       - name: Deployment Complete
         run: |
-          echo "All selected iFlows deployed successfully"
+          echo "Scheduled deployment completed successfully"
