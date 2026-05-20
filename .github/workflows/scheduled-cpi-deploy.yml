@@ -13,13 +13,8 @@ on:
         required: true
         type: string
 
-      deploymentDate:
-        description: "Deployment Date (YYYY-MM-DD)"
-        required: true
-        type: string
-
-      deploymentTime:
-        description: "Deployment Time (HH:MM in 24hr format)"
+      deploymentDateTime:
+        description: "Deployment Date & Time IST (YYYY-MM-DD HH:MM), example: 2026-05-20 22:30"
         required: true
         type: string
 
@@ -32,8 +27,7 @@ jobs:
         run: |
           echo "Package: ${{ github.event.inputs.packageName }}"
           echo "iFlows: ${{ github.event.inputs.iflowNames }}"
-          echo "Date: ${{ github.event.inputs.deploymentDate }}"
-          echo "Time: ${{ github.event.inputs.deploymentTime }}"
+          echo "Deployment DateTime IST: ${{ github.event.inputs.deploymentDateTime }}"
 
       - name: Install Piper
         run: |
@@ -42,7 +36,7 @@ jobs:
 
       - name: Wait Until Scheduled Time
         run: |
-          TARGET="${{ github.event.inputs.deploymentDate }} ${{ github.event.inputs.deploymentTime }}"
+          TARGET="${{ github.event.inputs.deploymentDateTime }}"
 
           TARGET_EPOCH=$(TZ="Asia/Kolkata" date -d "$TARGET" +%s)
           CURRENT_EPOCH=$(TZ="Asia/Kolkata" date +%s)
@@ -81,7 +75,6 @@ jobs:
 
             ./piper integrationArtifactDeploy \
               --integrationFlowId "$FLOW"
-
           done
 
       - name: Deployment Complete
