@@ -1,0 +1,89 @@
+name: Scheduled CPI Undeploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      packageName:
+        description: "Enter Package Name, example: test or test-123"
+        required: true
+        type: string
+
+      iflowNames:
+        description: "Enter multiple iFlows separated by comma"
+        required: true
+        type: string
+
+      undeploymentDate:
+        description: "Undeployment Date (YYYY-MM-DD)"
+        required: true
+        type: string
+
+      undeploymentTime:
+        description: "Undeployment Time (HH:MM in 24hr format)"
+        required: true
+        type: string
+
+jobs:
+  wait-and-undeploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print Undeployment Inputs
+        run: |
+          echo "Package: ${{ github.event.inputs.packageName }}"
+          echo "iFlows: ${{ github.event.inputs.iflowNames }}"
+          echo "Date: ${{ github.event.inputs.undeploymentDate }}"
+          echo "Time: ${{ github.event.inputs.undeploymentTime }}"
+
+      - name: Install Piper
+        run: |
+          curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
+          chmod +x piper
+
+      - name: Wait Until Scheduled Time
+        run: |
+          TARGET="${{ github.event.inputs.undeploymentDate }} ${{ github.event.inputs.undeploymentTime }}"
+
+          TARGET_EPOCH=$(TZ="Asia/Kolkata" date -d "$TARGET" +%s)
+          CURRENT_EPOCH=$(TZ="Asia/Kolkata" date +%s)
+
+          WAIT_SECONDS=$((TARGET_EPOCH - CURRENT_EPOCH))
+
+          echo "Current IST Time: $(TZ="Asia/Kolkata" date)"
+          echo "Undeployment IST Time: $TARGET"
+
+          if [ "$WAIT_SECONDS" -gt 0 ]; then
+            echo "Waiting $WAIT_SECONDS seconds..."
+            sleep $WAIT_SECONDS
+          else
+            echo "Undeployment time already passed"
+            exit 1
+          fi
+
+      - name: Undeploy Selected iFlows
+        env:
+          PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
+        run: |
+          PACKAGE="${{ github.event.inputs.packageName }}"
+          echo "Selected Package: $PACKAGE"
+
+          IFS=',' read -ra FLOWS <<< "${{ github.event.inputs.iflowNames }}"
+
+          for FLOW in "${FLOWS[@]}"
+          do
+            FLOW=$(echo "$FLOW" | xargs)
+
+            if [ -z "$FLOW" ]; then
+              continue
+            fi
+
+            echo "Undeploying iFlow: $FLOW from package: $PACKAGE"
+
+            ./piper integrationArtifactUnDeploy \
+              --integrationFlowId "$FLOW"
+
+          done
+
+      - name: Undeployment Complete
+        run: |
+          echo "Scheduled undeployment completed successfully"
