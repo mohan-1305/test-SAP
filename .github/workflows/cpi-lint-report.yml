@@ -2,10 +2,11 @@ name: CPI Lint PDF Report
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Pull All CPI Packages and iFlows"]
-    types:
-      - completed
+    inputs:
+      jiraKey:
+        description: "Jira Ticket Key"
+        required: false
+        type: string
 
 permissions:
   contents: write
