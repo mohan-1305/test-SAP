@@ -1,0 +1,85 @@
+name: Scheduled CPI Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      packageName:
+        description: "Package Name"
+        required: true
+        type: choice
+        options:
+          - test
+          - test-123
+
+      iflowNames:
+        description: "Enter multiple iFlows separated by comma"
+        required: true
+        type: string
+
+      deploymentDate:
+        description: "Deployment Date (YYYY-MM-DD)"
+        required: true
+        type: string
+
+      deploymentTime:
+        description: "Deployment Time (HH:MM in 24hr format)"
+        required: true
+        type: string
+
+jobs:
+  wait-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print Deployment Inputs
+        run: |
+          echo "Package: ${{ github.event.inputs.packageName }}"
+          echo "iFlows: ${{ github.event.inputs.iflowNames }}"
+          echo "Date: ${{ github.event.inputs.deploymentDate }}"
+          echo "Time: ${{ github.event.inputs.deploymentTime }}"
+
+      - name: Install Piper
+        run: |
+          curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
+          chmod +x piper
+
+      - name: Wait Until Scheduled Time
+        run: |
+          TARGET="${{ github.event.inputs.deploymentDate }} ${{ github.event.inputs.deploymentTime }}"
+
+          TARGET_EPOCH=$(date -d "$TARGET" +%s)
+          CURRENT_EPOCH=$(date +%s)
+
+          WAIT_SECONDS=$((TARGET_EPOCH - CURRENT_EPOCH))
+
+          echo "Current Time: $(date)"
+          echo "Deployment Time: $TARGET"
+
+          if [ "$WAIT_SECONDS" -gt 0 ]; then
+            echo "Waiting $WAIT_SECONDS seconds..."
+            sleep $WAIT_SECONDS
+          else
+            echo "Deployment time already passed"
+            exit 1
+          fi
+
+      - name: Deploy Selected iFlows
+        env:
+          PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
+        run: |
+          IFS=',' read -ra FLOWS <<< "${{ github.event.inputs.iflowNames }}"
+
+          for FLOW in "${FLOWS[@]}"
+          do
+            FLOW=$(echo "$FLOW" | xargs)
+
+            echo "Deploying iFlow: $FLOW"
+
+            ./piper integrationArtifactDeploy \
+              --integrationFlowId "$FLOW"
+
+          done
+
+      - name: Deployment Complete
+        run: |
+          echo "All selected iFlows deployed successfully"
