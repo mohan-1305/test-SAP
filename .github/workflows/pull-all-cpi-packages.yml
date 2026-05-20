@@ -10,7 +10,8 @@ on:
 
 permissions:
   contents: write
-
+  actions: write
+  
 jobs:
   pull-all-packages:
     runs-on: ubuntu-latest
