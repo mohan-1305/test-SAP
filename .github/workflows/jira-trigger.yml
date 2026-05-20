@@ -1,0 +1,29 @@
+name: JIRA Trigger - Start CPI Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      jiraKey:
+        description: "Jira Ticket Key"
+        required: false
+        type: string
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  trigger-pull-workflow:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger CPI Pull All Packages Workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JIRA_KEY: ${{ github.event.inputs.jiraKey }}
+        run: |
+          echo "Triggered from Jira ticket: $JIRA_KEY"
+
+          gh workflow run "pull-all-cpi-packages.yml" \
+            --ref main \
+            -f jiraKey="$JIRA_KEY"
