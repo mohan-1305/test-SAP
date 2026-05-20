@@ -139,3 +139,15 @@ jobs:
           git commit -m "Pull all CPI packages and iFlows from SAP BTP IS" || echo "No changes"
 
           git push
+
+      - name: Trigger CPI Lint Workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JIRA_KEY: ${{ github.event.inputs.jiraKey }}
+        run: |
+          echo "Triggering CPI Lint Report workflow"
+
+          gh workflow run cpi-lint-report.yml \
+            --repo mohan-1305/test-SAP \
+            --ref main \
+            -f jiraKey="$JIRA_KEY"    
