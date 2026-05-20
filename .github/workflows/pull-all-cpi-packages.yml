@@ -1,0 +1,137 @@
+name: Pull All CPI Packages and iFlows
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 16 * * *" # Daily 10 PM IST
+
+permissions:
+  contents: write
+
+jobs:
+  pull-all-packages:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
+          chmod +x piper
+
+      - name: Discover Packages and Download All iFlows
+        env:
+          PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
+          CPI_API_URL: ${{ secrets.CPI_API_URL }}
+          CPI_TOKEN_URL: ${{ secrets.CPI_TOKEN_URL }}
+        run: |
+          set -e
+
+          echo "$PIPER_apiServiceKey" > service-key.json
+
+          CLIENT_ID=$(jq -r '.clientid // .uaa.clientid // .oauth.clientid // .credentials.clientid' service-key.json)
+          CLIENT_SECRET=$(jq -r '.clientsecret // .uaa.clientsecret // .oauth.clientsecret // .credentials.clientsecret' service-key.json)
+
+          if [ "$CLIENT_ID" = "null" ] || [ -z "$CLIENT_ID" ]; then
+            echo "CLIENT_ID not found in service key"
+            exit 1
+          fi
+
+          if [ "$CLIENT_SECRET" = "null" ] || [ -z "$CLIENT_SECRET" ]; then
+            echo "CLIENT_SECRET not found in service key"
+            exit 1
+          fi
+
+          ACCESS_TOKEN=$(curl -s -X POST \
+            "$CPI_TOKEN_URL?grant_type=client_credentials" \
+            -u "$CLIENT_ID:$CLIENT_SECRET" | jq -r '.access_token')
+
+          if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
+            echo "Access token failed"
+            exit 1
+          fi
+
+          mkdir -p cpi-artifacts
+          rm -f downloaded-list.txt packages.json artifacts.json
+
+          echo "Fetching all CPI packages..."
+
+          curl -s -f \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -H "Accept: application/json" \
+            "$CPI_API_URL/api/v1/IntegrationPackages?\$format=json" \
+            -o packages.json
+
+          PACKAGE_IDS=$(jq -r '.d.results[].Id' packages.json)
+
+          if [ -z "$PACKAGE_IDS" ]; then
+            echo "No CPI packages found"
+            exit 1
+          fi
+
+          echo "Packages found:"
+          echo "$PACKAGE_IDS"
+
+          for PACKAGE_ID in $PACKAGE_IDS
+          do
+            echo "----------------------------------------"
+            echo "Package: $PACKAGE_ID"
+            echo "Fetching iFlows..."
+
+            curl -s -f \
+              -H "Authorization: Bearer $ACCESS_TOKEN" \
+              -H "Accept: application/json" \
+              "$CPI_API_URL/api/v1/IntegrationPackages('$PACKAGE_ID')/IntegrationDesigntimeArtifacts?\$format=json" \
+              -o artifacts.json
+
+            ARTIFACT_IDS=$(jq -r '.d.results[].Id' artifacts.json)
+
+            if [ -z "$ARTIFACT_IDS" ]; then
+              echo "No iFlows found in package: $PACKAGE_ID"
+              continue
+            fi
+
+            for FLOW_ID in $ARTIFACT_IDS
+            do
+              FLOW_ID=$(echo "$FLOW_ID" | xargs)
+
+              if [ -z "$FLOW_ID" ]; then
+                continue
+              fi
+
+              echo "Downloading iFlow: $FLOW_ID from package: $PACKAGE_ID"
+
+              mkdir -p "cpi-artifacts/${PACKAGE_ID}"
+
+              ./piper integrationArtifactDownload \
+                --integrationFlowId "$FLOW_ID" \
+                --integrationFlowVersion "active" \
+                --downloadPath "./cpi-artifacts/${PACKAGE_ID}"
+
+              ZIP_FILE="./cpi-artifacts/${PACKAGE_ID}/${FLOW_ID}.zip"
+              TARGET_FILE="./cpi-artifacts/${PACKAGE_ID}/${PACKAGE_ID}_${FLOW_ID}.zip"
+
+              if [ -f "$ZIP_FILE" ]; then
+                mv "$ZIP_FILE" "$TARGET_FILE"
+              fi
+
+              echo "${PACKAGE_ID}|${FLOW_ID}" >> downloaded-list.txt
+            done
+          done
+
+      - name: Commit and Push All CPI Artifacts
+        run: |
+          git config user.name "cpi-bot"
+          git config user.email "cpi-bot@github.com"
+
+          rm -f piper service-key.json packages.json artifacts.json downloaded-list.txt
+
+          git add cpi-artifacts/
+
+          git commit -m "Pull all CPI packages and iFlows from SAP BTP IS" || echo "No changes"
+
+          git push
