@@ -1,0 +1,26 @@
+name: CPI Deploy iFlow
+
+on:
+  workflow_dispatch:
+    inputs:
+      integrationFlowId:
+        description: "Enter CPI iFlow ID, example: Sampletest"
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Piper
+        run: |
+          curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
+          chmod +x piper
+
+      - name: Deploy CPI Artifact
+        env:
+          PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
+        run: |
+          ./piper integrationArtifactDeploy \
+            --integrationFlowId "${{ github.event.inputs.integrationFlowId }}"
