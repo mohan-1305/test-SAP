@@ -1,0 +1,168 @@
+name: Scheduled CPI Deploy With iFlow List
+
+on:
+  workflow_dispatch:
+    inputs:
+      selectedIflows:
+        description: "Enter iFlow IDs separated by comma, example: Flow1,Flow2"
+        required: true
+        type: string
+
+      deploymentDateTime:
+        description: "Deployment Date & Time IST (YYYY-MM-DD HH:MM), example: 2026-05-20 22:30"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  discover-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Dependencies and Piper
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+          curl -L https://github.com/SAP/jenkins-library/releases/latest/download/piper -o piper
+          chmod +x piper
+
+      - name: Discover Available Packages and iFlows
+        env:
+          PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
+          CPI_API_URL: ${{ secrets.CPI_API_URL }}
+          CPI_TOKEN_URL: ${{ secrets.CPI_TOKEN_URL }}
+        run: |
+          set -e
+
+          echo "$PIPER_apiServiceKey" > service-key.json
+
+          CLIENT_ID=$(jq -r '.clientid // .uaa.clientid // .oauth.clientid // .credentials.clientid' service-key.json)
+          CLIENT_SECRET=$(jq -r '.clientsecret // .uaa.clientsecret // .oauth.clientsecret // .credentials.clientsecret' service-key.json)
+
+          ACCESS_TOKEN=$(curl -s -X POST \
+            "$CPI_TOKEN_URL?grant_type=client_credentials" \
+            -u "$CLIENT_ID:$CLIENT_SECRET" | jq -r '.access_token')
+
+          if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
+            echo "Access token failed"
+            exit 1
+          fi
+
+          echo "Fetching all CPI packages..."
+
+          curl -s -f \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -H "Accept: application/json" \
+            "$CPI_API_URL/api/v1/IntegrationPackages?\$format=json" \
+            -o packages.json
+
+          PACKAGE_IDS=$(jq -r '.d.results[].Id' packages.json)
+
+          echo "# Available CPI Packages and iFlows" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Copy required iFlow IDs and paste them in **selectedIflows** input." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          > available-iflows.txt
+
+          for PACKAGE_ID in $PACKAGE_IDS
+          do
+            echo "## Package: $PACKAGE_ID" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            curl -s -f \
+              -H "Authorization: Bearer $ACCESS_TOKEN" \
+              -H "Accept: application/json" \
+              "$CPI_API_URL/api/v1/IntegrationPackages('$PACKAGE_ID')/IntegrationDesigntimeArtifacts?\$format=json" \
+              -o artifacts.json
+
+            ARTIFACT_IDS=$(jq -r '.d.results[].Id' artifacts.json)
+
+            if [ -z "$ARTIFACT_IDS" ]; then
+              echo "- No iFlows found" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              continue
+            fi
+
+            for FLOW_ID in $ARTIFACT_IDS
+            do
+              echo "- [ ] \`$FLOW_ID\`" >> $GITHUB_STEP_SUMMARY
+              echo "$PACKAGE_ID|$FLOW_ID" >> available-iflows.txt
+            done
+
+            echo "" >> $GITHUB_STEP_SUMMARY
+          done
+
+          echo "Available iFlow discovery completed."
+
+      - name: Validate Selected iFlows
+        run: |
+          IFS=',' read -ra SELECTED <<< "${{ github.event.inputs.selectedIflows }}"
+
+          echo "Selected iFlows:"
+          for FLOW in "${SELECTED[@]}"
+          do
+            FLOW=$(echo "$FLOW" | xargs)
+
+            if [ -z "$FLOW" ]; then
+              continue
+            fi
+
+            if grep -q "|$FLOW$" available-iflows.txt; then
+              echo "VALID: $FLOW"
+            else
+              echo "INVALID: $FLOW not found in available CPI artifacts"
+              echo "Please check available list in workflow summary"
+              exit 1
+            fi
+          done
+
+      - name: Wait Until Scheduled Time
+        run: |
+          TARGET="${{ github.event.inputs.deploymentDateTime }}"
+
+          TARGET_EPOCH=$(TZ="Asia/Kolkata" date -d "$TARGET" +%s)
+          CURRENT_EPOCH=$(TZ="Asia/Kolkata" date +%s)
+
+          WAIT_SECONDS=$((TARGET_EPOCH - CURRENT_EPOCH))
+
+          echo "Current IST Time: $(TZ="Asia/Kolkata" date)"
+          echo "Deployment IST Time: $TARGET"
+
+          if [ "$WAIT_SECONDS" -gt 0 ]; then
+            echo "Waiting $WAIT_SECONDS seconds..."
+            sleep $WAIT_SECONDS
+          else
+            echo "Deployment time already passed"
+            exit 1
+          fi
+
+      - name: Deploy Selected iFlows
+        env:
+          PIPER_apiServiceKey: ${{ secrets.PIPER_apiServiceKey }}
+        run: |
+          IFS=',' read -ra SELECTED <<< "${{ github.event.inputs.selectedIflows }}"
+
+          for FLOW in "${SELECTED[@]}"
+          do
+            FLOW=$(echo "$FLOW" | xargs)
+
+            if [ -z "$FLOW" ]; then
+              continue
+            fi
+
+            PACKAGE=$(grep "|$FLOW$" available-iflows.txt | head -1 | cut -d'|' -f1)
+
+            echo "Deploying iFlow: $FLOW"
+            echo "Package: $PACKAGE"
+
+            ./piper integrationArtifactDeploy \
+              --integrationFlowId "$FLOW"
+          done
+
+      - name: Deployment Complete
+        run: |
+          echo "Scheduled deployment completed successfully"
