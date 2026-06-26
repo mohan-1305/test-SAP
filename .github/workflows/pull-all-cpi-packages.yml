@@ -1,4 +1,4 @@
-name: Pull All CPI Packages and iFlows
+name: Pull All CPI Packages and iFlowss
 
 on:
   workflow_dispatch:
