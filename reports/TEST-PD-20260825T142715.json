@@ -1,0 +1,49 @@
+{
+  "Environment": "Test",
+  "SubmittedBy": "privileged",
+  "SubmittedAt": "2026-08-25T14:27:15.675Z",
+  "Changes": [
+    {
+      "EntityType": "StringParameter",
+      "Operation": "Delete",
+      "Pid": "PID_OrderDetails_I0123",
+      "Id": "ErrorPayloadLogging"
+    },
+    {
+      "EntityType": "BinaryParameter",
+      "Operation": "Delete",
+      "Pid": "Shipment_I0145",
+      "Id": "ReceiverDetermination"
+    },
+    {
+      "EntityType": "AlternativePartner",
+      "Operation": "Delete",
+      "Agency": "AGENCY",
+      "Scheme": "Scheme",
+      "Id": "newID"
+    },
+    {
+      "EntityType": "StringParameter",
+      "Operation": "Create",
+      "Pid": "1",
+      "Id": "1",
+      "Value": "11"
+    },
+    {
+      "EntityType": "BinaryParameter",
+      "Operation": "Create",
+      "Pid": "2",
+      "Id": "2",
+      "ContentType": "text",
+      "Value": "Rm9yIFRlc3RpbmcgR2l0aHVi"
+    },
+    {
+      "EntityType": "AlternativePartner",
+      "Operation": "Create",
+      "Agency": "Agency",
+      "Scheme": "Scheme",
+      "Id": "3",
+      "Pid": "3"
+    }
+  ]
+}
