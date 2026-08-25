@@ -1,0 +1,14 @@
+{
+  "Environment": "Test",
+  "SubmittedBy": "privileged",
+  "SubmittedAt": "2026-08-25T13:21:50.028Z",
+  "Changes": [
+    {
+      "EntityType": "AlternativePartner",
+      "Operation": "Delete",
+      "Agency": "AGENCY",
+      "Scheme": "Scheme",
+      "Id": "newID"
+    }
+  ]
+}
