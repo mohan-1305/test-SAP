@@ -1,0 +1,31 @@
+{
+  "Environment": "Development",
+  "SubmittedBy": "privileged",
+  "SubmittedAt": "2026-08-25T14:30:17.675Z",
+  "Changes": [
+    {
+      "EntityType": "StringParameter",
+      "Operation": "Delete",
+      "Pid": "Shipment_I0145",
+      "Id": "RetentionPeriod"
+    },
+    {
+      "EntityType": "StringParameter",
+      "Operation": "Delete",
+      "Pid": "PID_OrderDetails_I0123",
+      "Id": "SuccessPayloadLogging"
+    },
+    {
+      "EntityType": "BinaryParameter",
+      "Operation": "Delete",
+      "Pid": "Shipment_I0145",
+      "Id": "ReceiverDetermination"
+    },
+    {
+      "EntityType": "StringParameter",
+      "Operation": "Delete",
+      "Pid": "id",
+      "Id": "id"
+    }
+  ]
+}
