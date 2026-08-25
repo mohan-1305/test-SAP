@@ -1,0 +1,33 @@
+{
+  "Environment": "Test",
+  "SubmittedBy": "privileged",
+  "SubmittedAt": "2026-08-25T13:20:33.393Z",
+  "Changes": [
+    {
+      "EntityType": "StringParameter",
+      "Operation": "Update",
+      "Pid": "Shipment_I0145",
+      "Id": "RetentionPeriod",
+      "Value": "77"
+    },
+    {
+      "EntityType": "BinaryParameter",
+      "Operation": "Delete",
+      "Pid": "Shipment_I0145",
+      "Id": "ReceiverDetermination"
+    },
+    {
+      "EntityType": "AlternativePartner",
+      "Operation": "Delete",
+      "Agency": "AGENCY",
+      "Scheme": "Scheme",
+      "Id": "newID"
+    },
+    {
+      "EntityType": "StringParameter",
+      "Operation": "Delete",
+      "Pid": "PID_OrderDetails_I0123",
+      "Id": "ErrorPayloadLogging"
+    }
+  ]
+}
