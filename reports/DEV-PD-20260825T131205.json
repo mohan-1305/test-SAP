@@ -1,0 +1,28 @@
+{
+  "Environment": "Development",
+  "SubmittedBy": "privileged",
+  "SubmittedAt": "2026-08-25T13:12:05.665Z",
+  "Changes": [
+    {
+      "EntityType": "StringParameter",
+      "Operation": "Update",
+      "Pid": "id",
+      "Id": "id",
+      "Value": "value"
+    },
+    {
+      "EntityType": "AlternativePartner",
+      "Operation": "Update",
+      "Agency": "AGENCY",
+      "Scheme": "Scheme",
+      "Id": "new entry",
+      "Pid": "newPIDUpdate"
+    },
+    {
+      "EntityType": "StringParameter",
+      "Operation": "Delete",
+      "Pid": "a",
+      "Id": "b"
+    }
+  ]
+}
