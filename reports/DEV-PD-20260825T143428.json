@@ -1,0 +1,15 @@
+{
+  "Environment": "Development",
+  "SubmittedBy": "privileged",
+  "SubmittedAt": "2026-08-25T14:34:28.497Z",
+  "Changes": [
+    {
+      "EntityType": "AlternativePartner",
+      "Operation": "Update",
+      "Agency": "AGENCY",
+      "Scheme": "Scheme",
+      "Id": "newIDs",
+      "Pid": "newPIDUpdate"
+    }
+  ]
+}
