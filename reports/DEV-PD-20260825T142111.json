@@ -1,0 +1,42 @@
+{
+  "Environment": "Development",
+  "SubmittedBy": "privileged",
+  "SubmittedAt": "2026-08-25T14:21:11.488Z",
+  "Changes": [
+    {
+      "EntityType": "StringParameter",
+      "Operation": "Update",
+      "Pid": "a",
+      "Id": "b",
+      "Value": "cccccccccc"
+    },
+    {
+      "EntityType": "BinaryParameter",
+      "Operation": "Update",
+      "Pid": "pidd",
+      "Id": "iddd",
+      "ContentType": "text",
+      "Value": "VXBkYXRlIGJhc2U2NCB0ZXN0"
+    },
+    {
+      "EntityType": "AlternativePartner",
+      "Operation": "Update",
+      "Agency": "AGENCY",
+      "Scheme": "Scheme",
+      "Id": "newIDDDDDDDDDDDDDDDD",
+      "Pid": "newPIDUpdate"
+    },
+    {
+      "EntityType": "StringParameter",
+      "Operation": "Delete",
+      "Pid": "PID_OrderDetails_I0123",
+      "Id": "ErrorPayloadLogging"
+    },
+    {
+      "EntityType": "BinaryParameter",
+      "Operation": "Delete",
+      "Pid": "Shipment_I0145",
+      "Id": "ReceiverDetermination"
+    }
+  ]
+}
