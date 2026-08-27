@@ -415,7 +415,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "TargetDirectory",
-            "ParameterValue": "${header.TargetDirectory}",
+            "ParameterValue": "2",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -426,7 +426,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "TargetFileName",
-            "ParameterValue": "${header.TargetFilename}",
+            "ParameterValue": "3",
             "DataType": "xsd:string",
             "Description": null
           },
