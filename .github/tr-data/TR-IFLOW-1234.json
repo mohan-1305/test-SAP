@@ -404,7 +404,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "Allowed Header",
-            "ParameterValue": "TargetDirectory|TargetFilename",
+            "ParameterValue": "1",
             "DataType": "xsd:string",
             "Description": null
           },
