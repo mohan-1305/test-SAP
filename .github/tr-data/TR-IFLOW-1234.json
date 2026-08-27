@@ -89,7 +89,7 @@
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "Allowed Header",
-                "ParameterValue": "TargetDirectory|TargetFilename",
+                "ParameterValue": "TempAdd",
                 "DataType": "xsd:string",
                 "Description": null
               },
