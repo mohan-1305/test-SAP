@@ -404,7 +404,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "Allowed Header",
-            "ParameterValue": "1",
+            "ParameterValue": "Accenture1",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -415,7 +415,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "TargetDirectory",
-            "ParameterValue": "2",
+            "ParameterValue": "Accenture2",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -426,7 +426,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "TargetFileName",
-            "ParameterValue": "3",
+            "ParameterValue": "Accenture3",
             "DataType": "xsd:string",
             "Description": null
           },
