@@ -89,7 +89,7 @@
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "Allowed Header",
-                "ParameterValue": "Accenture1",
+                "ParameterValue": "Accenture11",
                 "DataType": "xsd:string",
                 "Description": null
               },
