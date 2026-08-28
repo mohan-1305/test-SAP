@@ -89,7 +89,7 @@
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "endpoint",
-                "ParameterValue": "/accenture/pumavaaaaaaaaaassdfdsa",
+                "ParameterValue": "1",
                 "DataType": "xsd:string",
                 "Description": null
               },
@@ -100,7 +100,7 @@
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "targetaddress",
-                "ParameterValue": "sftp.server.comaaaaaaaaaaa",
+                "ParameterValue": "2",
                 "DataType": "xsd:string",
                 "Description": null
               },
@@ -111,7 +111,7 @@
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "Path",
-                "ParameterValue": "/inbound/abcaaaaaaaaaaa",
+                "ParameterValue": "3",
                 "DataType": "xsd:string",
                 "Description": null
               },
@@ -122,7 +122,7 @@
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "filename",
-                "ParameterValue": "${property.currentDate}",
+                "ParameterValue": "4",
                 "DataType": "xsd:string",
                 "Description": null
               },
@@ -133,7 +133,7 @@
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "credentials",
-                "ParameterValue": "SFTP_ASTRO_FIONA_TEST",
+                "ParameterValue": "5",
                 "DataType": "xsd:string",
                 "Description": null
               }
@@ -360,7 +360,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "Directory",
-            "ParameterValue": "TargetDirectory|TargetFilename",
+            "ParameterValue": "6",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -371,7 +371,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "TargetDirectory",
-            "ParameterValue": "${header.TargetDirectory}",
+            "ParameterValue": "7",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -382,7 +382,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "TargetFileName",
-            "ParameterValue": "${header.TargetFilename}",
+            "ParameterValue": "8",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -393,7 +393,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "SFTP Address",
-            "ParameterValue": "sftp.fiona-test.jscapemft.cloud:3305",
+            "ParameterValue": "9",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -404,7 +404,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "SFTP Credential",
-            "ParameterValue": "SFTP_ASTRO_FIONA_TEST",
+            "ParameterValue": "10",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -415,7 +415,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "Append Timestamp",
-            "ParameterValue": "0",
+            "ParameterValue": "11",
             "DataType": "xsd:boolean",
             "Description": null
           },
@@ -426,7 +426,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "Log_Payload",
-            "ParameterValue": "false",
+            "ParameterValue": "12",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -437,7 +437,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "Log_Step",
-            "ParameterValue": "Final_Payload",
+            "ParameterValue": "13",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -448,7 +448,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "MyEndpointAddress",
-            "ParameterValue": "/kkkk/ssss",
+            "ParameterValue": "14",
             "DataType": "xsd:string",
             "Description": null
           }
