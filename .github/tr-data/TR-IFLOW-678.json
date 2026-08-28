@@ -15,7 +15,7 @@
       "origin": "DEV_NODE",
       "entries": [
         {
-          "id": 94625,
+          "id": 98091,
           "storageType": "FILE",
           "contentType": "MTA",
           "uri": "94616",
@@ -34,8 +34,8 @@
             {
               "id": "63665556f89d4f7fba57f91c62ebeddd",
               "type": "Integration Flow",
-              "name": "httpssender_SFTPReceiverEXt_config",
-              "version": "1.0.3",
+              "name": "ID5555",
+              "version": "1.0.1",
               "attributes": []
             }
           ]
@@ -46,18 +46,18 @@
         {
           "d": {
             "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='httpssender_SFTPReceiverEXt_config',Version='1.0.3')",
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='httpssender_SFTPReceiverEXt_config',Version='1.0.3')",
+              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')",
+              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')",
               "type": "com.sap.hci.api.IntegrationDesigntimeArtifact",
               "content_type": "application/octet-stream",
-              "media_src": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='httpssender_SFTPReceiverEXt_config',Version='1.0.3')/$value",
-              "edit_media": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='httpssender_SFTPReceiverEXt_config',Version='1.0.3')/$value"
+              "media_src": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')/$value",
+              "edit_media": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')/$value"
             },
-            "Id": "httpssender_SFTPReceiverEXt_config",
-            "Version": "1.0.3",
+            "Id": "ID5555",
+            "Version": "1.0.1",
             "PackageId": "SandboxRR",
-            "Name": "httpssender_SFTPReceiverEXt_config",
-            "Description": "SFTPReceiver cpilint testcase_cpi lint",
+            "Name": "ID5555",
+            "Description": "Externalized parameter test1",
             "Sender": "",
             "Receiver": "",
             "CreatedBy": "rajalakshmi.rajendran.ext@puma.com",
@@ -68,116 +68,72 @@
             "Comment": null,
             "Configurations": {
               "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='httpssender_SFTPReceiverEXt_config',Version='1.0.3')/Configurations"
+                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')/Configurations"
               }
             },
             "Resources": {
               "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='httpssender_SFTPReceiverEXt_config',Version='1.0.3')/Resources"
+                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')/Resources"
               }
             },
             "DesignGuidelineExecutionResults": {
               "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='httpssender_SFTPReceiverEXt_config',Version='1.0.3')/DesignGuidelineExecutionResults"
+                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')/DesignGuidelineExecutionResults"
               }
             },
             "results": [
               {
                 "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Allowed%20Header')",
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Allowed%20Header')",
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('endpoint')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('endpoint')",
                   "type": "com.sap.hci.api.Configuration"
                 },
-                "ParameterKey": "Allowed Header",
-                "ParameterValue": "Accenture11",
+                "ParameterKey": "endpoint",
+                "ParameterValue": "/accenture/puma",
                 "DataType": "xsd:string",
                 "Description": null
               },
               {
                 "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('TargetDirectory')",
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('TargetDirectory')",
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('targetaddress')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('targetaddress')",
                   "type": "com.sap.hci.api.Configuration"
                 },
-                "ParameterKey": "TargetDirectory",
-                "ParameterValue": "Accenture22",
+                "ParameterKey": "targetaddress",
+                "ParameterValue": "sftp.server.com",
                 "DataType": "xsd:string",
                 "Description": null
               },
               {
                 "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('TargetFileName')",
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('TargetFileName')",
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Path')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Path')",
                   "type": "com.sap.hci.api.Configuration"
                 },
-                "ParameterKey": "TargetFileName",
-                "ParameterValue": "Accenture33",
+                "ParameterKey": "Path",
+                "ParameterValue": "/inbound/abc",
                 "DataType": "xsd:string",
                 "Description": null
               },
               {
                 "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('SFTP%20Address')",
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('SFTP%20Address')",
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('filename')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('filename')",
                   "type": "com.sap.hci.api.Configuration"
                 },
-                "ParameterKey": "SFTP Address",
-                "ParameterValue": "Accenture44",
+                "ParameterKey": "filename",
+                "ParameterValue": "${property.currentDate}",
                 "DataType": "xsd:string",
                 "Description": null
               },
               {
                 "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('SFTP%20Credential')",
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('SFTP%20Credential')",
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('credentials')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('credentials')",
                   "type": "com.sap.hci.api.Configuration"
                 },
-                "ParameterKey": "SFTP Credential",
-                "ParameterValue": "Accenture55",
-                "DataType": "xsd:string",
-                "Description": null
-              },
-              {
-                "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Append%20Timestamp')",
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Append%20Timestamp')",
-                  "type": "com.sap.hci.api.Configuration"
-                },
-                "ParameterKey": "Append Timestamp",
-                "ParameterValue": "Accenture66",
-                "DataType": "xsd:boolean",
-                "Description": null
-              },
-              {
-                "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Log_Payload')",
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Log_Payload')",
-                  "type": "com.sap.hci.api.Configuration"
-                },
-                "ParameterKey": "Log_Payload",
-                "ParameterValue": "Accenture77",
-                "DataType": "xsd:string",
-                "Description": null
-              },
-              {
-                "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Log_Step')",
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Log_Step')",
-                  "type": "com.sap.hci.api.Configuration"
-                },
-                "ParameterKey": "Log_Step",
-                "ParameterValue": "Accenture88",
-                "DataType": "xsd:string",
-                "Description": null
-              },
-              {
-                "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('MyEndpointAddress')",
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('MyEndpointAddress')",
-                  "type": "com.sap.hci.api.Configuration"
-                },
-                "ParameterKey": "MyEndpointAddress",
-                "ParameterValue": "Accenture99",
+                "ParameterKey": "credentials",
+                "ParameterValue": "SFTP_ASTRO_FIONA_TEST",
                 "DataType": "xsd:string",
                 "Description": null
               }
@@ -404,7 +360,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "Allowed Header",
-            "ParameterValue": "Accenture100",
+            "ParameterValue": "TargetDirectory|TargetFilename",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -415,7 +371,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "TargetDirectory",
-            "ParameterValue": "Accenture111",
+            "ParameterValue": "${header.TargetDirectory}",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -426,7 +382,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "TargetFileName",
-            "ParameterValue": "Accenture122",
+            "ParameterValue": "${header.TargetFilename}",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -437,7 +393,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "SFTP Address",
-            "ParameterValue": "Accenture133",
+            "ParameterValue": "sftp.fiona-test.jscapemft.cloud:3305",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -448,7 +404,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "SFTP Credential",
-            "ParameterValue": "Accenture144",
+            "ParameterValue": "SFTP_ASTRO_FIONA_TEST",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -459,7 +415,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "Append Timestamp",
-            "ParameterValue": "Accenture155",
+            "ParameterValue": "0",
             "DataType": "xsd:boolean",
             "Description": null
           },
@@ -470,7 +426,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "Log_Payload",
-            "ParameterValue": "Accenture166",
+            "ParameterValue": "false",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -481,7 +437,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "Log_Step",
-            "ParameterValue": "Accenture177",
+            "ParameterValue": "Final_Payload",
             "DataType": "xsd:string",
             "Description": null
           },
@@ -492,7 +448,7 @@
               "type": "com.sap.hci.api.Configuration"
             },
             "ParameterKey": "MyEndpointAddress",
-            "ParameterValue": "Accenture188",
+            "ParameterValue": "/kkkk/ssss",
             "DataType": "xsd:string",
             "Description": null
           }
