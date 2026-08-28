@@ -89,7 +89,7 @@
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "Allowed Header",
-                "ParameterValue": "TempAdd",
+                "ParameterValue": "Accenture",
                 "DataType": "xsd:string",
                 "Description": null
               },
