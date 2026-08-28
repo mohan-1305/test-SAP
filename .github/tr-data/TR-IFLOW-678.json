@@ -89,7 +89,7 @@
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "endpoint",
-                "ParameterValue": "/accenture/puma",
+                "ParameterValue": "/accenture/pumav",
                 "DataType": "xsd:string",
                 "Description": null
               },
