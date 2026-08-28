@@ -89,7 +89,7 @@
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "endpoint",
-                "ParameterValue": "/accenture/pumav",
+                "ParameterValue": "/accenture/pumavaaaaaaaaa",
                 "DataType": "xsd:string",
                 "Description": null
               },
@@ -100,7 +100,7 @@
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "targetaddress",
-                "ParameterValue": "sftp.server.com",
+                "ParameterValue": "sftp.server.comaaaaaaaaaaa",
                 "DataType": "xsd:string",
                 "Description": null
               },
@@ -111,7 +111,7 @@
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "Path",
-                "ParameterValue": "/inbound/abc",
+                "ParameterValue": "/inbound/abcaaaaaaaaaaa",
                 "DataType": "xsd:string",
                 "Description": null
               },
