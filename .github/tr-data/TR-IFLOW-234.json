@@ -47,12 +47,12 @@
         {
           "d": {
             "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)%22,
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)%22,
+              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='QA_104',Version='1.0.15')",
+              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='QA_104',Version='1.0.15')",
               "type": "com.sap.hci.api.IntegrationDesigntimeArtifact",
               "content_type": "application/octet-stream",
-              "media_src": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/$value%22,
-              "edit_media": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/$value%22
+              "media_src": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='QA_104',Version='1.0.15')/$value",
+              "edit_media": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='QA_104',Version='1.0.15')/$value"
             },
             "Id": "QA_104",
             "Version": "1.0.15",
@@ -69,17 +69,17 @@
             "Comment": null,
             "Configurations": {
               "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/Configurations%22
+                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='QA_104',Version='1.0.15')/Configurations"
               }
             },
             "Resources": {
               "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/Resources%22
+                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='QA_104',Version='1.0.15')/Resources"
               }
             },
             "DesignGuidelineExecutionResults": {
               "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/DesignGuidelineExecutionResults%22
+                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='QA_104',Version='1.0.15')/DesignGuidelineExecutionResults"
               }
             },
             "results": [
@@ -118,8 +118,8 @@
               },
               {
                 "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('receiverend…,
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('receiverend…,
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('receiverendpoint')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('receiverendpoint')",
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "receiverendpoint",
@@ -129,8 +129,8 @@
               },
               {
                 "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('mailaddress…,
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('mailaddress…,
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('mailaddress')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('mailaddress')",
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "mailaddress",
@@ -151,8 +151,8 @@
               },
               {
                 "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('fromaddress…,
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('fromaddress…,
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('fromaddress')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('fromaddress')",
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "fromaddress",
