@@ -1,0 +1,181 @@
+{
+  "jiraIssueKey": "S4TM-5081",
+  "origin": "TEST_NODE",
+  "transportRequests": [
+    {
+      "id": 122199,
+      "status": "initial",
+      "archived": false,
+      "isTest": false,
+      "position": 5871,
+      "createdBy": "ad5cdf4a-78c5-46d1-8a53-c21f035c65eb",
+      "createdByNamedUser": "rajalakshmi.rajendran.ext@puma.com",
+      "createdAt": "2026-10-13T07:16:53.444Z",
+      "queuedAt": "2026-10-13T07:16:53.519Z",
+      "description": "SandboxCICD - QA_104",
+      "origin": "DEV_NODE",
+      "entries": [
+        {
+          "id": 122202,
+          "storageType": "FILE",
+          "contentType": "MTA",
+          "uri": "122193",
+          "objectsMetadata": [
+            {
+              "id": "3d74c622353e4c0fbfe2f9372218123b",
+              "type": "MTA",
+              "version": "0.0.1",
+              "attributes": []
+            },
+            {
+              "id": "SandboxCICD",
+              "type": "com.sap.integration",
+              "attributes": []
+            },
+            {
+              "id": "06a259ed5eef4cdfbba8b0e9fd6e602e",
+              "type": "Integration Flow",
+              "name": "QA_104",
+              "version": "1.0.15",
+              "attributes": []
+            }
+          ]
+        }
+      ],
+      "jiraIssueKey": "S4TM-5081",
+      "cpiIflows": [
+        {
+          "d": {
+            "__metadata": {
+              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)%22,
+              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)%22,
+              "type": "com.sap.hci.api.IntegrationDesigntimeArtifact",
+              "content_type": "application/octet-stream",
+              "media_src": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/$value%22,
+              "edit_media": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/$value%22
+            },
+            "Id": "QA_104",
+            "Version": "1.0.15",
+            "PackageId": "SandboxCICD",
+            "Name": "QA_104",
+            "Description": "TR and Externalized parameter test case 1.0",
+            "Sender": "",
+            "Receiver": "",
+            "CreatedBy": "rajalakshmi.rajendran.ext@puma.com",
+            "CreatedAt": "1790146159399",
+            "ModifiedBy": "rajalakshmi.rajendran.ext@puma.com",
+            "ModifiedAt": "1791875720741",
+            "ArtifactContent": null,
+            "Comment": null,
+            "Configurations": {
+              "__deferred": {
+                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/Configurations%22
+              }
+            },
+            "Resources": {
+              "__deferred": {
+                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/Resources%22
+              }
+            },
+            "DesignGuidelineExecutionResults": {
+              "__deferred": {
+                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/DesignGuidelineExecutionResults%22
+              }
+            },
+            "results": [
+              {
+                "__metadata": {
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('endpoint')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('endpoint')",
+                  "type": "com.sap.hci.api.Configuration"
+                },
+                "ParameterKey": "endpoint",
+                "ParameterValue": "/QA/Test104dd",
+                "DataType": "xsd:string",
+                "Description": null
+              },
+              {
+                "__metadata": {
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('baseurl')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('baseurl')",
+                  "type": "com.sap.hci.api.Configuration"
+                },
+                "ParameterKey": "baseurl",
+                "ParameterValue": "${property.apiBaseUrl}",
+                "DataType": "xsd:string",
+                "Description": null
+              },
+              {
+                "__metadata": {
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('apikey')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('apikey')",
+                  "type": "com.sap.hci.api.Configuration"
+                },
+                "ParameterKey": "apikey",
+                "ParameterValue": "${property.apiKey}",
+                "DataType": "xsd:string",
+                "Description": null
+              },
+              {
+                "__metadata": {
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('receiverend…,
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('receiverend…,
+                  "type": "com.sap.hci.api.Configuration"
+                },
+                "ParameterKey": "receiverendpoint",
+                "ParameterValue": "${property.apiBaseUrl}",
+                "DataType": "xsd:string",
+                "Description": null
+              },
+              {
+                "__metadata": {
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('mailaddress…,
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('mailaddress…,
+                  "type": "com.sap.hci.api.Configuration"
+                },
+                "ParameterKey": "mailaddress",
+                "ParameterValue": "smtp.mailserver.com:587",
+                "DataType": "xsd:string",
+                "Description": null
+              },
+              {
+                "__metadata": {
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('username')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('username')",
+                  "type": "com.sap.hci.api.Configuration"
+                },
+                "ParameterKey": "username",
+                "ParameterValue": "OFFICE_365_ALERT_MAIL",
+                "DataType": "xsd:string",
+                "Description": null
+              },
+              {
+                "__metadata": {
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('fromaddress…,
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('fromaddress…,
+                  "type": "com.sap.hci.api.Configuration"
+                },
+                "ParameterKey": "fromaddress",
+                "ParameterValue": "srv_sap_cpi_smtp@puma.com",
+                "DataType": "xsd:string",
+                "Description": null
+              },
+              {
+                "__metadata": {
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('toaddress')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('toaddress')",
+                  "type": "com.sap.hci.api.Configuration"
+                },
+                "ParameterKey": "toaddress",
+                "ParameterValue": "rajalakshmi.rajendran.ext@puma.com",
+                "DataType": "xsd:string",
+                "Description": null
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "iflows": []
+}
