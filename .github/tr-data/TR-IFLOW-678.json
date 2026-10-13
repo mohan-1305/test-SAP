@@ -1,84 +1,85 @@
 {
-  "jiraIssueKey": "1234",
+  "jiraIssueKey": "S4TM-5081",
+  "origin": "TEST_NODE",
   "transportRequests": [
     {
-      "id": 94622,
+      "id": 122199,
       "status": "initial",
       "archived": false,
       "isTest": false,
-      "position": 5014,
+      "position": 5871,
       "createdBy": "ad5cdf4a-78c5-46d1-8a53-c21f035c65eb",
       "createdByNamedUser": "rajalakshmi.rajendran.ext@puma.com",
-      "createdAt": "2026-08-26T05:23:19.001Z",
-      "queuedAt": "2026-08-26T05:23:19.063Z",
-      "description": "SandboxRR - TR and config inside and adapter of iflow",
+      "createdAt": "2026-10-13T07:16:53.444Z",
+      "queuedAt": "2026-10-13T07:16:53.519Z",
+      "description": "SandboxCICD - QA_104",
       "origin": "DEV_NODE",
       "entries": [
         {
-          "id": 98091,
+          "id": 122202,
           "storageType": "FILE",
           "contentType": "MTA",
-          "uri": "94616",
+          "uri": "122193",
           "objectsMetadata": [
             {
-              "id": "a8b9fe3bedea4e28b89ed3e4f6a87bcc",
+              "id": "3d74c622353e4c0fbfe2f9372218123b",
               "type": "MTA",
               "version": "0.0.1",
               "attributes": []
             },
             {
-              "id": "SandboxRR",
+              "id": "SandboxCICD",
               "type": "com.sap.integration",
               "attributes": []
             },
             {
-              "id": "63665556f89d4f7fba57f91c62ebeddd",
+              "id": "06a259ed5eef4cdfbba8b0e9fd6e602e",
               "type": "Integration Flow",
-              "name": "ID5555",
-              "version": "1.0.1",
+              "name": "QA_104",
+              "version": "1.0.15",
               "attributes": []
             }
           ]
         }
       ],
-      "jiraIssueKey": "1234",
+      "jiraIssueKey": "S4TM-5081",
       "cpiIflows": [
         {
           "d": {
             "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')",
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')",
+              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)%22,
+              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)%22,
               "type": "com.sap.hci.api.IntegrationDesigntimeArtifact",
               "content_type": "application/octet-stream",
-              "media_src": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')/$value",
-              "edit_media": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')/$value"
+              "media_src": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/$value%22,
+              "edit_media": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/$value%22
             },
-            "Id": "ID5555",
-            "Version": "1.0.1",
-            "PackageId": "SandboxRR",
-            "Name": "ID5555",
-            "Description": "Externalized parameter test1",
+            "Id": "QA_104",
+            "Version": "1.0.15",
+            "PackageId": "SandboxCICD",
+            "Name": "QA_104",
+            "Description": "TR and Externalized parameter test case 1.0",
             "Sender": "",
             "Receiver": "",
             "CreatedBy": "rajalakshmi.rajendran.ext@puma.com",
-            "CreatedAt": "1787635464198",
+            "CreatedAt": "1790146159399",
             "ModifiedBy": "rajalakshmi.rajendran.ext@puma.com",
-            "ModifiedAt": "1787721751236",
+            "ModifiedAt": "1791875720741",
             "ArtifactContent": null,
             "Comment": null,
             "Configurations": {
               "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')/Configurations"
+                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/Configurations%22
               }
             },
             "Resources": {
               "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')/Resources"
+                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/Resources%22
               }
             },
             "DesignGuidelineExecutionResults": {
               "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID5555',Version='1.0.1')/DesignGuidelineExecutionResults"
+                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id=%27QA_104%27,Version=%271.0.15%27)/DesignGuidelineExecutionResults%22
               }
             },
             "results": [
@@ -89,51 +90,84 @@
                   "type": "com.sap.hci.api.Configuration"
                 },
                 "ParameterKey": "endpoint",
-                "ParameterValue": "11111",
+                "ParameterValue": "/QA/Test104dd",
                 "DataType": "xsd:string",
                 "Description": null
               },
               {
                 "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('targetaddress')",
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('targetaddress')",
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('baseurl')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('baseurl')",
                   "type": "com.sap.hci.api.Configuration"
                 },
-                "ParameterKey": "targetaddress",
-                "ParameterValue": "222222",
+                "ParameterKey": "baseurl",
+                "ParameterValue": "${property.apiBaseUrl}",
                 "DataType": "xsd:string",
                 "Description": null
               },
               {
                 "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Path')",
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Path')",
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('apikey')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('apikey')",
                   "type": "com.sap.hci.api.Configuration"
                 },
-                "ParameterKey": "Path",
-                "ParameterValue": "33",
+                "ParameterKey": "apikey",
+                "ParameterValue": "${property.apiKey}",
                 "DataType": "xsd:string",
                 "Description": null
               },
               {
                 "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('filename')",
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('filename')",
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('receiverend…,
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('receiverend…,
                   "type": "com.sap.hci.api.Configuration"
                 },
-                "ParameterKey": "filename",
-                "ParameterValue": "44",
+                "ParameterKey": "receiverendpoint",
+                "ParameterValue": "${property.apiBaseUrl}",
                 "DataType": "xsd:string",
                 "Description": null
               },
               {
                 "__metadata": {
-                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('credentials')",
-                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('credentials')",
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('mailaddress…,
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('mailaddress…,
                   "type": "com.sap.hci.api.Configuration"
                 },
-                "ParameterKey": "credentials",
-                "ParameterValue": "55",
+                "ParameterKey": "mailaddress",
+                "ParameterValue": "smtp.mailserver.com:587",
+                "DataType": "xsd:string",
+                "Description": null
+              },
+              {
+                "__metadata": {
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('username')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('username')",
+                  "type": "com.sap.hci.api.Configuration"
+                },
+                "ParameterKey": "username",
+                "ParameterValue": "OFFICE_365_ALERT_MAIL",
+                "DataType": "xsd:string",
+                "Description": null
+              },
+              {
+                "__metadata": {
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('fromaddress…,
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('fromaddress…,
+                  "type": "com.sap.hci.api.Configuration"
+                },
+                "ParameterKey": "fromaddress",
+                "ParameterValue": "srv_sap_cpi_smtp@puma.com",
+                "DataType": "xsd:string",
+                "Description": null
+              },
+              {
+                "__metadata": {
+                  "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('toaddress')",
+                  "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('toaddress')",
+                  "type": "com.sap.hci.api.Configuration"
+                },
+                "ParameterKey": "toaddress",
+                "ParameterValue": "rajalakshmi.rajendran.ext@puma.com",
                 "DataType": "xsd:string",
                 "Description": null
               }
@@ -141,319 +175,7 @@
           }
         }
       ]
-    },
-    {
-      "id": 94636,
-      "status": "initial",
-      "archived": false,
-      "isTest": false,
-      "position": 5015,
-      "createdBy": "ad5cdf4a-78c5-46d1-8a53-c21f035c65eb",
-      "createdByNamedUser": "rajalakshmi.rajendran.ext@puma.com",
-      "createdAt": "2026-08-26T05:26:26.723Z",
-      "queuedAt": "2026-08-26T05:26:26.851Z",
-      "description": "SandboxRR - TR only without configuration in the iflow test case",
-      "origin": "DEV_NODE",
-      "entries": [
-        {
-          "id": 94639,
-          "storageType": "FILE",
-          "contentType": "MTA",
-          "uri": "94630",
-          "objectsMetadata": [
-            {
-              "id": "a8b9fe3bedea4e28b89ed3e4f6a87bcc",
-              "type": "MTA",
-              "version": "0.0.1",
-              "attributes": []
-            },
-            {
-              "id": "SandboxRR",
-              "type": "com.sap.integration",
-              "attributes": []
-            },
-            {
-              "id": "05484efb52aa441fbc11d48e15a172b0",
-              "type": "Integration Flow",
-              "name": "Httpsender_TRonly",
-              "version": "1.0.2",
-              "attributes": []
-            }
-          ]
-        }
-      ],
-      "jiraIssueKey": "1234",
-      "cpiIflows": [
-        {
-          "d": {
-            "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='Httpsender_TRonly',Version='1.0.2')",
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='Httpsender_TRonly',Version='1.0.2')",
-              "type": "com.sap.hci.api.IntegrationDesigntimeArtifact",
-              "content_type": "application/octet-stream",
-              "media_src": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='Httpsender_TRonly',Version='1.0.2')/$value",
-              "edit_media": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='Httpsender_TRonly',Version='1.0.2')/$value"
-            },
-            "Id": "Httpsender_TRonly",
-            "Version": "1.0.2",
-            "PackageId": "SandboxRR",
-            "Name": "Httpsender_TRonly",
-            "Description": "Testcase for TR only scenario",
-            "Sender": "",
-            "Receiver": "",
-            "CreatedBy": "rajalakshmi.rajendran.ext@puma.com",
-            "CreatedAt": "1787721909675",
-            "ModifiedBy": "rajalakshmi.rajendran.ext@puma.com",
-            "ModifiedAt": "1787721909684",
-            "ArtifactContent": null,
-            "Comment": null,
-            "Configurations": {
-              "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='Httpsender_TRonly',Version='1.0.2')/Configurations"
-              }
-            },
-            "Resources": {
-              "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='Httpsender_TRonly',Version='1.0.2')/Resources"
-              }
-            },
-            "DesignGuidelineExecutionResults": {
-              "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='Httpsender_TRonly',Version='1.0.2')/DesignGuidelineExecutionResults"
-              }
-            },
-            "results": []
-          }
-        }
-      ]
-    },
-    {
-      "id": 94650,
-      "status": "initial",
-      "archived": false,
-      "isTest": false,
-      "position": 5016,
-      "createdBy": "ad5cdf4a-78c5-46d1-8a53-c21f035c65eb",
-      "createdByNamedUser": "rajalakshmi.rajendran.ext@puma.com",
-      "createdAt": "2026-08-26T05:33:54.778Z",
-      "queuedAt": "2026-08-26T05:33:54.841Z",
-      "description": "SandboxRR - TR only",
-      "origin": "DEV_NODE",
-      "entries": [
-        {
-          "id": 94653,
-          "storageType": "FILE",
-          "contentType": "MTA",
-          "uri": "94644",
-          "objectsMetadata": [
-            {
-              "id": "a8b9fe3bedea4e28b89ed3e4f6a87bcc",
-              "type": "MTA",
-              "version": "0.0.1",
-              "attributes": []
-            },
-            {
-              "id": "SandboxRR",
-              "type": "com.sap.integration",
-              "attributes": []
-            },
-            {
-              "id": "4eca69a71cb64479ab39ab41b1566300",
-              "type": "Integration Flow",
-              "name": "ID1111",
-              "version": "1.0.3",
-              "attributes": []
-            }
-          ]
-        }
-      ],
-      "jiraIssueKey": "1234",
-      "cpiIflows": [
-        {
-          "d": {
-            "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID1111',Version='1.0.3')",
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID1111',Version='1.0.3')",
-              "type": "com.sap.hci.api.IntegrationDesigntimeArtifact",
-              "content_type": "application/octet-stream",
-              "media_src": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID1111',Version='1.0.3')/$value",
-              "edit_media": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID1111',Version='1.0.3')/$value"
-            },
-            "Id": "ID1111",
-            "Version": "1.0.3",
-            "PackageId": "SandboxRR",
-            "Name": "ID1111",
-            "Description": "Testcase for TR only scenario",
-            "Sender": "",
-            "Receiver": "",
-            "CreatedBy": "rajalakshmi.rajendran.ext@puma.com",
-            "CreatedAt": "1787722319930",
-            "ModifiedBy": "rajalakshmi.rajendran.ext@puma.com",
-            "ModifiedAt": "1787722401334",
-            "ArtifactContent": null,
-            "Comment": null,
-            "Configurations": {
-              "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID1111',Version='1.0.3')/Configurations"
-              }
-            },
-            "Resources": {
-              "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID1111',Version='1.0.3')/Resources"
-              }
-            },
-            "DesignGuidelineExecutionResults": {
-              "__deferred": {
-                "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID1111',Version='1.0.3')/DesignGuidelineExecutionResults"
-              }
-            },
-            "results": []
-          }
-        }
-      ]
     }
   ],
-  "iflows": [
-    {
-      "d": {
-        "__metadata": {
-          "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID2223',Version='1.0.5')",
-          "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID2223',Version='1.0.5')",
-          "type": "com.sap.hci.api.IntegrationDesigntimeArtifact",
-          "content_type": "application/octet-stream",
-          "media_src": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID2223',Version='1.0.5')/$value",
-          "edit_media": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID2223',Version='1.0.5')/$value"
-        },
-        "Id": "ID2223",
-        "Version": "1.0.5",
-        "PackageId": "SandboxIN",
-        "Name": "ID2223",
-        "Description": "SFTPReceiver cpilint testcase_cpi lint",
-        "Sender": "",
-        "Receiver": "",
-        "CreatedBy": "rajalakshmi.rajendran.ext@puma.com",
-        "CreatedAt": "1787722537932",
-        "ModifiedBy": "rajalakshmi.rajendran.ext@puma.com",
-        "ModifiedAt": "1787722745872",
-        "ArtifactContent": null,
-        "Comment": null,
-        "Configurations": {
-          "__deferred": {
-            "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID2223',Version='1.0.5')/Configurations"
-          }
-        },
-        "Resources": {
-          "__deferred": {
-            "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID2223',Version='1.0.5')/Resources"
-          }
-        },
-        "DesignGuidelineExecutionResults": {
-          "__deferred": {
-            "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/IntegrationDesigntimeArtifacts(Id='ID2223',Version='1.0.5')/DesignGuidelineExecutionResults"
-          }
-        },
-        "results": [
-          {
-            "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Allowed%20Header')",
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Allowed%20Header')",
-              "type": "com.sap.hci.api.Configuration"
-            },
-            "ParameterKey": "Directory",
-            "ParameterValue": "6",
-            "DataType": "xsd:string",
-            "Description": null
-          },
-          {
-            "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('TargetDirectory')",
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('TargetDirectory')",
-              "type": "com.sap.hci.api.Configuration"
-            },
-            "ParameterKey": "TargetDirectory",
-            "ParameterValue": "7",
-            "DataType": "xsd:string",
-            "Description": null
-          },
-          {
-            "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('TargetFileName')",
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('TargetFileName')",
-              "type": "com.sap.hci.api.Configuration"
-            },
-            "ParameterKey": "TargetFileName",
-            "ParameterValue": "8",
-            "DataType": "xsd:string",
-            "Description": null
-          },
-          {
-            "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('SFTP%20Address')",
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('SFTP%20Address')",
-              "type": "com.sap.hci.api.Configuration"
-            },
-            "ParameterKey": "SFTP Address",
-            "ParameterValue": "9",
-            "DataType": "xsd:string",
-            "Description": null
-          },
-          {
-            "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('SFTP%20Credential')",
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('SFTP%20Credential')",
-              "type": "com.sap.hci.api.Configuration"
-            },
-            "ParameterKey": "SFTP Credential",
-            "ParameterValue": "10",
-            "DataType": "xsd:string",
-            "Description": null
-          },
-          {
-            "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Append%20Timestamp')",
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Append%20Timestamp')",
-              "type": "com.sap.hci.api.Configuration"
-            },
-            "ParameterKey": "Append Timestamp",
-            "ParameterValue": "11",
-            "DataType": "xsd:boolean",
-            "Description": null
-          },
-          {
-            "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Log_Payload')",
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Log_Payload')",
-              "type": "com.sap.hci.api.Configuration"
-            },
-            "ParameterKey": "Log_Payload",
-            "ParameterValue": "12",
-            "DataType": "xsd:string",
-            "Description": null
-          },
-          {
-            "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Log_Step')",
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('Log_Step')",
-              "type": "com.sap.hci.api.Configuration"
-            },
-            "ParameterKey": "Log_Step",
-            "ParameterValue": "13",
-            "DataType": "xsd:string",
-            "Description": null
-          },
-          {
-            "__metadata": {
-              "id": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('MyEndpointAddress')",
-              "uri": "https://puma-int-dev.it-cpi005.cfapps.eu20.hana.ondemand.com:443/api/v1/Configurations('MyEndpointAddress')",
-              "type": "com.sap.hci.api.Configuration"
-            },
-            "ParameterKey": "MyEndpointAddress",
-            "ParameterValue": "14",
-            "DataType": "xsd:string",
-            "Description": null
-          }
-        ]
-      }
-    }
-  ]
+  "iflows": []
 }
