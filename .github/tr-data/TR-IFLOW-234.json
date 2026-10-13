@@ -1,6 +1,6 @@
 {
   "jiraIssueKey": "S4TM-5081",
-  "origin": "TEST_NODE",
+  "origin": "DEV_NODE",
   "transportRequests": [
     {
       "id": 122199,
